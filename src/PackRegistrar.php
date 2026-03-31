@@ -58,7 +58,7 @@ final class PackRegistrar
 	{
 		$version = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION')
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION')
-			: '0.1.0';
+			: '0.2.0';
 
 		$minCore = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
@@ -69,7 +69,7 @@ final class PackRegistrar
 			'name' => \__('Housebuilder', 'contextualwp-housebuilder-pack'),
 			'version' => $version,
 			'description' => \__(
-				'Reference sector pack scaffold for housebuilder-specific ContextualWP extensions.',
+				'Housebuilder-oriented relationship hints, schema interpretation, and conservative ACF semantic tagging for ContextualWP.',
 				'contextualwp-housebuilder-pack'
 			),
 			'author' => 'Kirk Johnston / KWD-IT',

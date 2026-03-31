@@ -1,6 +1,6 @@
 {
   "name": "kwd-it/contextualwp-housebuilder-pack",
-  "description": "Housebuilder sector pack plugin for ContextualWP (reference implementation scaffold).",
+  "description": "Housebuilder sector pack for ContextualWP: relationship hints, interpretation, and ACF semantic field grouping.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "authors": [
