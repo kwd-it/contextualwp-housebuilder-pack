@@ -20,4 +20,3 @@ final class Bootstrap
 		$this->plugin->registerHooks();
 	}
 }
-

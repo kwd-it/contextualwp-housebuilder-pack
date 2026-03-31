@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace ContextualWP\HousebuilderPack;
 
-use ContextualWP\HousebuilderPack\Services\InterpretationService;
-use ContextualWP\HousebuilderPack\Services\RelationshipService;
-use ContextualWP\HousebuilderPack\Services\SchemaExtensionService;
-
 final class PackRegistrar
 {
+	/**
+	 * Public pack slug passed to ContextualWP (see core Registry::normalise_and_validate()).
+	 */
 	public const SECTOR_SLUG = 'housebuilder';
 
 	/**
 	 * Registers this sector pack with ContextualWP core.
 	 *
-	 * Integration point assumption (to verify in ContextualWP core v1.1+):
-	 * - `contextualwp_register_sector_pack( array $pack ): void`
+	 * @see https://github.com/kwd-it/contextualwp/blob/main/includes/SectorPacks/Registry.php
 	 */
 	public function register(): void
 	{
@@ -29,8 +27,11 @@ final class PackRegistrar
 	}
 
 	/**
-	 * Placeholder configuration shape intended for a future stable pack API.
-	 * Keep this minimal and safe for a public reference implementation.
+	 * Metadata for contextualwp_register_sector_pack( array $meta ): bool.
+	 *
+	 * Required keys: slug, name, version.
+	 * Optional: description, author or vendor, requires_contextualwp, settings_url.
+	 * Core strips any other keys during normalisation.
 	 *
 	 * @return array<string, mixed>
 	 */
@@ -40,24 +41,20 @@ final class PackRegistrar
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION')
 			: '0.1.0';
 
+		$minCore = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
+			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
+			: '1.1.0';
+
 		return [
-			'sector' => [
-				'slug' => self::SECTOR_SLUG,
-				'label' => 'Housebuilder',
-			],
-			'pack' => [
-				'slug' => 'contextualwp-housebuilder-pack',
-				'version' => $version,
-			],
-			'services' => [
-				'schema_extension' => SchemaExtensionService::class,
-				'relationships' => RelationshipService::class,
-				'interpretation' => InterpretationService::class,
-			],
-			'meta' => [
-				// Intentionally empty: future reserved keys (e.g., docs URL, schema version).
-			],
+			'slug' => self::SECTOR_SLUG,
+			'name' => \__('Housebuilder', 'contextualwp-housebuilder-pack'),
+			'version' => $version,
+			'description' => \__(
+				'Reference sector pack scaffold for housebuilder-specific ContextualWP extensions.',
+				'contextualwp-housebuilder-pack'
+			),
+			'author' => 'Kirk Johnston / KWD-IT',
+			'requires_contextualwp' => $minCore,
 		];
 	}
 }
-
