@@ -37,6 +37,7 @@ final class Plugin
 		}
 
 		$this->registrar->register();
+		$this->registrar->registerExtensions();
 	}
 
 	private function maybeAdminNoticeMissingCore(): void

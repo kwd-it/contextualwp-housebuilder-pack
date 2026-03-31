@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace ContextualWP\HousebuilderPack;
 
+use ContextualWP\HousebuilderPack\Services\InterpretationService;
+use ContextualWP\HousebuilderPack\Services\RelationshipService;
+use ContextualWP\HousebuilderPack\Services\SchemaExtensionService;
+
 final class PackRegistrar
 {
 	/**
@@ -24,6 +28,21 @@ final class PackRegistrar
 
 		$fn = Compatibility::CORE_REGISTRATION_FN;
 		$fn($this->buildRegistrationConfig());
+	}
+
+	/**
+	 * Subscribes to ContextualWP filter hooks (manifest schema, REST schema, ACF schema).
+	 * Runs after core pack registration; safe no-op if core is unavailable.
+	 */
+	public function registerExtensions(): void
+	{
+		if (!Compatibility::isCoreAvailable()) {
+			return;
+		}
+
+		(new RelationshipService())->register();
+		(new InterpretationService())->register();
+		(new SchemaExtensionService())->register();
 	}
 
 	/**
