@@ -1,0 +1,19 @@
+/vendor/
+/node_modules/
+/.idea/
+/.cursor/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Local fixtures (never commit real outputs)
+/tests/local-fixtures/**/*.json
+/tests/local-fixtures/**/*.ndjson
+/tests/local-fixtures/**/*.txt
+
