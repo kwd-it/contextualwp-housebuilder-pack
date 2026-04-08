@@ -116,46 +116,62 @@ final class InterpretationService
 	{
 		$out = [];
 
-		if (SiteStructureHints::hasPublicPostType('developments')) {
-			$out['developments'] = [
-				'entity_kind' => 'housing_development_site',
-				'summary' => __(
-					'A live housing development or site: branding, narrative, and location context for a collection of plots.',
-					'contextualwp-housebuilder-pack'
-				),
-				'typical_use' => __(
-					'Landing pages for schemes; often parent or anchor content for plot listings.',
-					'contextualwp-housebuilder-pack'
-				),
-			];
-		}
-
-		if (SiteStructureHints::hasPublicPostType('plots')) {
-			$out['plots'] = [
-				'entity_kind' => 'plot_or_unit',
-				'summary' => __(
-					'An individual building plot or property unit within a development, including availability and specification-oriented fields.',
-					'contextualwp-housebuilder-pack'
-				),
-				'typical_use' => __(
-					'Per-home detail pages; frequently filtered by development taxonomy or linked to a parent development record.',
-					'contextualwp-housebuilder-pack'
-				),
-			];
-		}
-
-		if (SiteStructureHints::hasPublicPostType('future_developments')) {
-			$out['future_developments'] = [
-				'entity_kind' => 'pipeline_development_content',
-				'summary' => __(
-					'Editorial or land-and-planning content about forthcoming schemes before they become active sales sites.',
-					'contextualwp-housebuilder-pack'
-				),
-				'typical_use' => __(
-					'Pipeline storytelling, consultations, or early-stage scheme announcements.',
-					'contextualwp-housebuilder-pack'
-				),
-			];
+		foreach (HousebuilderStructuralSignals::publicPostTypeObjects() as $pt) {
+			$profile = HousebuilderStructuralSignals::postTypeInterpretationProfile($pt);
+			if ($profile === null) {
+				continue;
+			}
+			$kind = $profile['entity_kind'];
+			$slug = $pt->name;
+			if ($kind === 'housing_development_site') {
+				$out[$slug] = [
+					'entity_kind' => $kind,
+					'summary' => __(
+						'A live housing development or site: branding, narrative, and location context for a collection of plots.',
+						'contextualwp-housebuilder-pack'
+					),
+					'typical_use' => __(
+						'Landing pages for schemes; often parent or anchor content for plot listings.',
+						'contextualwp-housebuilder-pack'
+					),
+				];
+			} elseif ($kind === 'plot_or_unit') {
+				$out[$slug] = [
+					'entity_kind' => $kind,
+					'summary' => __(
+						'An individual building plot or property unit within a development, including availability and specification-oriented fields.',
+						'contextualwp-housebuilder-pack'
+					),
+					'typical_use' => __(
+						'Per-home detail pages; frequently filtered by development taxonomy or linked to a parent development record.',
+						'contextualwp-housebuilder-pack'
+					),
+				];
+			} elseif ($kind === 'pipeline_development_content') {
+				$out[$slug] = [
+					'entity_kind' => $kind,
+					'summary' => __(
+						'Editorial or land-and-planning content about forthcoming schemes before they become active sales sites.',
+						'contextualwp-housebuilder-pack'
+					),
+					'typical_use' => __(
+						'Pipeline storytelling, consultations, or early-stage scheme announcements.',
+						'contextualwp-housebuilder-pack'
+					),
+				];
+			} elseif ($kind === 'house_type_or_property_model') {
+				$out[$slug] = [
+					'entity_kind' => $kind,
+					'summary' => __(
+						'A reusable house type or property model (layout/spec catalogue), often linked from multiple plot records.',
+						'contextualwp-housebuilder-pack'
+					),
+					'typical_use' => __(
+						'Shared templates for bedroom counts, floor plans, and model-level media reused across developments.',
+						'contextualwp-housebuilder-pack'
+					),
+				];
+			}
 		}
 
 		return $out;
@@ -168,29 +184,24 @@ final class InterpretationService
 	{
 		$out = [];
 
-		if (!SiteStructureHints::hasPublicPostType('plots')) {
+		if (SiteStructureHints::plotLikePublicPostTypeSlugs() === []) {
 			return $out;
 		}
 
 		foreach (\get_taxonomies(['public' => true], 'objects') as $tax) {
+			if (!$tax instanceof \WP_Taxonomy) {
+				continue;
+			}
+			if (!SiteStructureHints::isPlotDevelopmentClassifierTaxonomy($tax)) {
+				continue;
+			}
 			$name = $tax->name;
-			if (!SiteStructureHints::taxonomyAppliesToPostType($name, 'plots')) {
-				continue;
-			}
-			if (!SiteStructureHints::isGenericDevelopmentTaxonomy($name)) {
-				continue;
-			}
-			$objects = \is_array($tax->object_type) ? $tax->object_type : [];
-			if (\count($objects) > 1) {
-				continue;
-			}
-
 			$out[$name] = [
 				'role' => 'plot_development_classifier',
 				'summary' => \sprintf(
 					/* translators: %s: taxonomy slug */
 					\__(
-						'The "%s" taxonomy classifies plot posts by development or scheme (plots-only registration).',
+						'The "%s" taxonomy classifies plot-like content by development, site, or scheme (registered only against plot-like post types).',
 						'contextualwp-housebuilder-pack'
 					),
 					$name

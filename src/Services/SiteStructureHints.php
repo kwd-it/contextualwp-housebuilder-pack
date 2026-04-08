@@ -9,16 +9,6 @@ namespace ContextualWP\HousebuilderPack\Services;
  */
 final class SiteStructureHints
 {
-	/**
-	 * Taxonomy slugs that commonly classify plots by parent development / scheme.
-	 *
-	 * @var list<string>
-	 */
-	private const DEVELOPMENT_TAXONOMY_SLUGS = [
-		'development',
-		'developments',
-	];
-
 	public static function hasPublicPostType(string $slug): bool
 	{
 		$object = \get_post_type_object($slug);
@@ -31,7 +21,55 @@ final class SiteStructureHints
 	 */
 	public static function publicPostTypeSlugs(): array
 	{
-		return \array_keys(\get_post_types(['public' => true], 'names'));
+		return HousebuilderStructuralSignals::publicPostTypeSlugs();
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public static function plotLikePublicPostTypeSlugs(): array
+	{
+		$out = [];
+		foreach (HousebuilderStructuralSignals::publicPostTypeObjects() as $pt) {
+			if (HousebuilderStructuralSignals::postTypeIsPlotUnitLike($pt)) {
+				$out[] = $pt->name;
+			}
+		}
+		\sort($out, \SORT_STRING);
+
+		return $out;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public static function developmentSiteLikePublicPostTypeSlugs(): array
+	{
+		$out = [];
+		foreach (HousebuilderStructuralSignals::publicPostTypeObjects() as $pt) {
+			if (HousebuilderStructuralSignals::postTypeIsDevelopmentSiteLike($pt)) {
+				$out[] = $pt->name;
+			}
+		}
+		\sort($out, \SORT_STRING);
+
+		return $out;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public static function pipelineDevelopmentLikePublicPostTypeSlugs(): array
+	{
+		$out = [];
+		foreach (HousebuilderStructuralSignals::publicPostTypeObjects() as $pt) {
+			if (HousebuilderStructuralSignals::postTypeIsPipelineLike($pt)) {
+				$out[] = $pt->name;
+			}
+		}
+		\sort($out, \SORT_STRING);
+
+		return $out;
 	}
 
 	public static function taxonomyAppliesToPostType(string $taxonomy, string $postType): bool
@@ -44,16 +82,29 @@ final class SiteStructureHints
 	}
 
 	/**
-	 * Whether a taxonomy slug is a generic "development family" classifier (not client-specific naming).
+	 * Whether taxonomy registration + slug/label signals look like a development/scheme classifier.
 	 */
 	public static function isGenericDevelopmentTaxonomy(string $taxonomySlug): bool
 	{
-		if (\in_array($taxonomySlug, self::DEVELOPMENT_TAXONOMY_SLUGS, true)) {
-			return true;
+		$tax = \get_taxonomy($taxonomySlug);
+
+		return $tax instanceof \WP_Taxonomy
+			&& HousebuilderStructuralSignals::taxonomySuggestsDevelopmentSchemeClassifier($tax);
+	}
+
+	/**
+	 * Plot-classifier path: taxonomy applies only to recognised plot-like CPTs and passes naming signals.
+	 */
+	public static function isPlotDevelopmentClassifierTaxonomy(\WP_Taxonomy $tax): bool
+	{
+		if (!HousebuilderStructuralSignals::taxonomySuggestsDevelopmentSchemeClassifier($tax)) {
+			return false;
 		}
 
-		// e.g. development_type — still a structural hint when tied to plots only (caller checks object types).
-		return (bool) \preg_match('/(^|_)development(s)?($|_)/', $taxonomySlug);
+		return HousebuilderStructuralSignals::taxonomyAppliesOnlyToPlotLike(
+			$tax,
+			self::plotLikePublicPostTypeSlugs()
+		);
 	}
 
 	/**
