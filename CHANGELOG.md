@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.0 - 2026-04-08
+
+Broadened, still **conservative** structural inference for housebuilder-style registrations; stricter taxonomy classifier handling; optional house-type / property-model detection when slug and label evidence is strong.
+
+- **Structural detection**: Post types are classified using **normalised slug tokens**, compact slug forms, and selected **label-derived tokens** (no post or field values). Supports development-like, plot- or unit-like, pipeline-like, and (with a high bar) house-type- or property-model-like roles. **Exclusion tokens** on slugs suppress careers, blog, and similar CPTs from housebuilder inference.
+- **Interpretation order**: Pipeline-like content takes precedence over house-type, development, and plot roles when multiple signals could apply.
+- **Taxonomy classifier**: Plot–development classifier rows and taxonomy interpretation require taxonomies that **apply only to detected plot-like CPTs** and pass **stricter** development/scheme/site/community naming checks; label-derived matches require corroborating **slug tokens** to avoid substring false positives (for example “site” inside unrelated words).
+- **Relationships**: Manifest relationship discovery uses the same detected endpoint sets (not a fixed trio of slugs), including pipeline→development edges where both sides are detected.
+
 ## 0.2.0 - 2026-03-31
 
 First functional enhancement pass focused on structure consumers (manifest, REST schema, interpretation aggregate, ACF schema).

@@ -2,7 +2,7 @@
 
 Housebuilder sector pack plugin for ContextualWP.
 
-This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. As of **0.2.0** it is no longer scaffold-only: it ships a **first functional enhancement pass** that improves manifest relationships, schema interpretation, and ACF field semantics for typical housebuilder-style WordPress setups. ContextualWP core stays sector-agnostic; this plugin enhances exported schema when active.
+This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.3.0** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, and ACF field semantics for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
 
 ## Why this exists
 
@@ -28,10 +28,13 @@ This repository is the **first sector pack** for ContextualWP and remains a **cl
   - Registers with `contextualwp_register_sector_pack()`.
   - Loads **schema extensions** when core is available (relationships, interpretation, ACF).
 - **Services**: `src/Services/*`
-  - **RelationshipService** — manifest relationship rows from CPTs, taxonomy registration, and optional ACF link evidence.
+  - **RelationshipService** — manifest relationship rows from detected development-like, plot-like, and pipeline-like CPTs, taxonomy registration, and optional ACF link evidence.
   - **InterpretationService** — `housebuilder_pack` metadata on post types (manifest + REST) and aggregate interpretation via `contextualwp_schema_interpretation`.
   - **SchemaExtensionService** — keyword-based ACF field `semantic` tags and `semantic_groups` roll-ups.
-  - **SiteStructureHints** — read-only helpers (public CPT checks, taxonomy naming heuristics, ACF field graph inspection).
+  - **SiteStructureHints** — read-only helpers (public CPT lists by role, taxonomy rules, ACF field graph inspection).
+  - **HousebuilderStructuralSignals** — normalised token-based classifiers for CPTs and taxonomies; conservative synonyms and exclusion rules (no content inspection).
+
+**Current focus areas** for this pack: **relationships** (manifest edges and evidence), **schema interpretation** (post types and taxonomies), **ACF semantics** (field-level tags), and **broader structural detection** (registration metadata and naming signals, not values).
 
 ## Requirements
 
@@ -68,7 +71,7 @@ Version detection is best-effort: it checks for `CONTEXTUALWP_VERSION` when defi
 
 ## Current scope and limitations
 
-Enhancements are **conservative** and driven by registration metadata and **common housebuilder naming** (for example public CPT slugs such as `developments`, `plots`, and `future_developments`, and taxonomies whose slugs look like a development/scheme classifier). ACF semantics use **substring keyword rules** on field name, label, and instructions only; ties or ambiguity result in no semantic assignment. Sites with different slugs or editorial models may see no or partial enrichment until inference is expanded.
+Enhancements are **conservative** and driven by registration metadata and **normalised naming signals** (CPT slugs and labels, taxonomy slugs and labels). Detection recognises **development-like**, **plot- or unit-like**, **pipeline- or forthcoming-scheme-like**, and **house-type- or property-model-like** public post types when token and compact-slug evidence is strong enough, with **exclusion tokens** to reduce false positives on editorial or careers-style CPTs. Taxonomy treatment for plot classifiers is **stricter**: development/scheme-style signals must align with slug tokens (including guarding label-only matches that could otherwise misread words such as “site”). ACF semantics still use **substring keyword rules** on field name, label, and instructions only; ties or ambiguity result in no semantic assignment. Sites with unusual naming may see partial or no enrichment until rules are extended.
 
 ## Fixture policy (public safety)
 
@@ -86,21 +89,18 @@ For a repeatable local check that the pack only adds structured hints:
 
 - Capture exports (for example manifest, schema, ACF schema) into `tests/local-fixtures/baseline/` with **ContextualWP core only**.
 - Capture the same exports into `tests/local-fixtures/with-pack/` with **core + this pack** active.
+- Optionally use **versioned subdirectories** (for example `with-pack/v1`, `with-pack/v2`) to compare one enhancement pass or release milestone against the next; those artefacts remain **local-only** under the gitignore rules unless later **sanitised** into `tests/fixtures/examples/`.
 - Diff the trees: expect new relationship rows, `housebuilder_pack` blocks, interpretation subtrees, and ACF `semantic` / `semantic_groups` fields where structure matches the rules above—not changes to unrelated core shape.
 
 ## Development notes
 
-See `DEVNOTES.md` for practical guidance on:
-
-- Core vs pack boundaries
-- What changed in the 0.2.0 pass and remaining assumptions
-- Fixture policy and comparison loop
-- Likely next steps
+See `DEVNOTES.md` for practical guidance core vs pack boundaries, what changed in recent passes, fixture policy, and likely next steps.
 
 ## Roadmap
 
-- Broaden structure detection beyond exact slug matches where safe (for example configurable slug maps or additional heuristics).
-- Review and tighten semantic keyword lists and tie-breaking to reduce false positives/negatives.
+- Second-site and variant layouts for portability validation.
+- Richer relationship hints where evidence supports house types and cross-links.
+- Media, download, and floor-plan oriented ACF semantics where patterns are clear enough to stay low–false-positive.
 - Confirm long-term core API contracts (filters, interpretation merge rules, service lifecycle).
 - Add sanitised public examples under `tests/fixtures/examples/` when appropriate.
 - Add minimal automated tests once core contracts are stable.

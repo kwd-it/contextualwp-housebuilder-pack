@@ -3,7 +3,7 @@
  * Plugin Name:       ContextualWP Housebuilder Pack
  * Plugin URI:        https://github.com/kwd-it/contextualwp-housebuilder-pack
  * Description:       Housebuilder sector pack for ContextualWP. Relationship hints, schema interpretation, and ACF semantic tagging; public reference for sector packs.
- * Version:           0.2.0
+ * Version:           0.3.0
  * Requires at least: 6.4
  * Tested up to:      6.8
  * Requires PHP:      8.1
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-const CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION = '0.2.0';
+const CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION = '0.3.0';
 const CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION = '1.1.0';
 
 /**
