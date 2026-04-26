@@ -33,30 +33,18 @@ $autoload = __DIR__ . '/vendor/autoload.php';
 
 if (is_readable($autoload)) {
 	require_once $autoload;
-} else {
-	// Fail safely when Composer dependencies are not installed.
-	add_action('admin_notices', static function (): void {
-		if (!current_user_can('activate_plugins')) {
-			return;
-		}
-
-		echo '<div class="notice notice-warning"><p>'
-			. esc_html__('ContextualWP Housebuilder Pack is installed but its dependencies are missing. Run Composer install (vendor/autoload.php not found).', 'contextualwp-housebuilder-pack')
-			. '</p></div>';
-	});
-
-	return;
 }
 
-if (!class_exists(\ContextualWP\HousebuilderPack\Bootstrap::class)) {
-	// Defensive: autoloader present but expected class not found.
+// Built ZIP installs ship plugin-local vendor; Composer-managed sites may load
+// this package only via the project root autoloader (no plugin/vendor directory).
+if (!class_exists(\ContextualWP\HousebuilderPack\Bootstrap::class, true)) {
 	add_action('admin_notices', static function (): void {
 		if (!current_user_can('activate_plugins')) {
 			return;
 		}
 
 		echo '<div class="notice notice-warning"><p>'
-			. esc_html__('ContextualWP Housebuilder Pack is installed but failed to load. Expected Bootstrap class was not found. Reinstall dependencies and ensure the plugin files are complete.', 'contextualwp-housebuilder-pack')
+			. esc_html__('ContextualWP Housebuilder Pack could not load. Install it via Composer at project level, or use a built release package that includes vendor dependencies.', 'contextualwp-housebuilder-pack')
 			. '</p></div>';
 	});
 

@@ -14,8 +14,8 @@ This repository is the **first sector pack** for ContextualWP and remains a **cl
 ## Architecture overview
 
 - **Main plugin file**: `contextualwp-housebuilder-pack.php`
-  - Loads Composer autoloader (if present).
-  - Boots the plugin safely (no fatals if dependencies are missing).
+  - Loads the plugin-local Composer autoloader when `vendor/autoload.php` is present, or relies on the site’s root autoloader when the pack is required as a Composer package.
+  - Boots the plugin safely (no fatals if pack classes cannot be loaded).
 - **Bootstrap**: `src/Bootstrap.php`
   - Creates the plugin instance and registers hooks.
 - **Compatibility**: `src/Compatibility.php`
@@ -44,22 +44,23 @@ This repository is the **first sector pack** for ContextualWP and remains a **cl
 
 ## Installation
 
-1. Place the plugin folder at:
-   - `wp-content/plugins/contextualwp-housebuilder-pack/`
-2. Install Composer dependencies:
+Supported setups:
 
-```bash
-composer install --no-dev
-```
+1. **Built release / manual install** — ZIP or copied plugin tree that includes **`vendor/`** (run `composer install --no-dev` in the pack when building the artifact). Place the folder under `wp-content/plugins/contextualwp-housebuilder-pack/` and activate.
+2. **Composer-managed WordPress project** — Require this package from the **project root** (for example `composer require kwd-it/contextualwp-housebuilder-pack`) so the root `vendor/autoload.php` registers the pack’s PSR-4 classes. **Do not** rely on running Composer only inside the plugin directory; the plugin may have no local `vendor/autoload.php`, which is expected when the root autoloader already loads the pack.
 
-3. Activate **ContextualWP** core.
-4. Activate **ContextualWP Housebuilder Pack**.
+Then activate **ContextualWP** core and **ContextualWP Housebuilder Pack** (order does not change behaviour: the pack waits for core on `plugins_loaded`).
+
+If wp-admin shows that the pack **could not load** (classes missing), fix the Composer or release layout—not the same as “ContextualWP core is inactive”, which is a separate admin notice from `Plugin.php`.
 
 ## Activation behaviour
 
+- If **pack PHP classes cannot be autoloaded** (neither plugin-local `vendor/autoload.php` nor the project autoloader provides `ContextualWP\HousebuilderPack\Bootstrap`):
+  - The plugin will **not fatal** and will not affect front end behaviour.
+  - An **admin notice** explains project-level Composer or a built release with `vendor/`.
 - If **ContextualWP core is inactive/unavailable**:
   - The plugin will **not fatal** and will not affect front end behaviour.
-  - An **admin notice** may be displayed for site administrators.
+  - A **different** admin notice refers to installing/activating ContextualWP core (not “run Composer in the plugin folder”).
 - If **ContextualWP core is active and compatible**:
   - The plugin registers the sector pack and attaches filters that enrich manifest, REST schema, interpretation output, and ACF schema exports.
 

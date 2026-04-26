@@ -42,6 +42,14 @@ Intentionally not implemented yet:
 - **Semantic tagging** is substring keyword matching on **name, label, instructions**; two groups with the same top score produce **no** semantic output for that field.
 - Version and compatibility behaviour unchanged in spirit from 0.1.0: still depends on `contextualwp_register_sector_pack()` presence and optional `CONTEXTUALWP_VERSION` for strict checks.
 
+## Bootstrap / autoload verification (manual)
+
+Confirm the main plugin file behaves for all three cases (wp-admin as a user with `activate_plugins`):
+
+1. **Built install** — Plugin directory includes `vendor/autoload.php` (from a release build or `composer install` in the pack when producing the artifact). Activating the plugin should **not** show the yellow “could not load” notice; core missing still shows the separate **ContextualWP core** notice from `Plugin.php` after `plugins_loaded`.
+2. **Composer-managed site** — No `vendor/` under the plugin path, but the project root `vendor/autoload.php` already requires this package (`kwd-it/contextualwp-housebuilder-pack`) so `ContextualWP\HousebuilderPack\Bootstrap` is registered. Activating should behave like (1); you must **not** see a false warning about missing `vendor/autoload.php` in the plugin folder.
+3. **Missing classes** — Remove the pack from the root `composer.json` / autoload mapping (or use an incomplete tree) while the plugin remains active. Expect the single warning: install via **project** Composer or use a **built release** with dependencies—not instructions to run Composer inside the plugin directory.
+
 ## Testing workflow (local)
 
 Recommended local loop:
