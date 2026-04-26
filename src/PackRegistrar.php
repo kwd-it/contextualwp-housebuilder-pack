@@ -58,7 +58,7 @@ final class PackRegistrar
 	{
 		$version = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION')
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION')
-			: '0.3.0';
+			: '0.3.1';
 
 		$minCore = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')

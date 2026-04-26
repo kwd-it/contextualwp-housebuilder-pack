@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.1 - 2026-04-25
+
+### Fixed
+
+- Supported Composer-managed WordPress installs where the sector pack is autoloaded by the project/root Composer autoloader rather than plugin-local `vendor/autoload.php`.
+- Improved the missing-class admin notice so it no longer incorrectly tells Composer-managed installs to run Composer inside the plugin directory.
+
+### Documentation
+
+- Clarified supported install modes for built release/manual installs and Composer-managed WordPress projects.
+- Added manual bootstrap/autoload verification notes.
+
 ## 0.3.0 - 2026-04-08
 
 Broadened, still **conservative** structural inference for housebuilder-style registrations; stricter taxonomy classifier handling; optional house-type / property-model detection when slug and label evidence is strong.

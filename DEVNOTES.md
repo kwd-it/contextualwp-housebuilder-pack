@@ -10,7 +10,7 @@ This document is for contributors to this repository. Keep wording professional 
   - Avoid duplicating or forking core functionality.
   - Fail gracefully when core is missing or incompatible.
 
-## Status: 0.3.0 (broadened structural detection pass)
+## Status: 0.3.1 (Composer-managed autoload patch; structural detection pass below is 0.3.0)
 
 Implemented (cumulative):
 
