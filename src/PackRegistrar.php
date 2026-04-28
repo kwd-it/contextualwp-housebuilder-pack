@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ContextualWP\HousebuilderPack;
 
 use ContextualWP\HousebuilderPack\Services\InterpretationService;
+use ContextualWP\HousebuilderPack\Services\PlotsRestService;
 use ContextualWP\HousebuilderPack\Services\RelationshipService;
 use ContextualWP\HousebuilderPack\Services\SchemaExtensionService;
 
@@ -43,6 +44,7 @@ final class PackRegistrar
 		(new RelationshipService())->register();
 		(new InterpretationService())->register();
 		(new SchemaExtensionService())->register();
+		(new PlotsRestService())->register();
 	}
 
 	/**
