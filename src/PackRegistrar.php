@@ -32,7 +32,7 @@ final class PackRegistrar
 	}
 
 	/**
-	 * Subscribes to ContextualWP filter hooks (manifest schema, REST schema, ACF schema).
+	 * Subscribes to ContextualWP filter hooks (manifest schema, REST schema, ACF schema) and registers pack REST routes.
 	 * Runs after core pack registration; safe no-op if core is unavailable.
 	 */
 	public function registerExtensions(): void
@@ -60,7 +60,7 @@ final class PackRegistrar
 	{
 		$version = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION')
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_VERSION')
-			: '0.3.1';
+			: '0.4.0';
 
 		$minCore = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')

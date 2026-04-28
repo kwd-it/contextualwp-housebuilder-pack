@@ -2,7 +2,7 @@
 
 Housebuilder sector pack plugin for ContextualWP.
 
-This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.3.1** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, and ACF field semantics for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
+This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.0** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
 
 ## Why this exists
 
@@ -26,15 +26,16 @@ This repository is the **first sector pack** for ContextualWP and remains a **cl
   - Shows lightweight admin notices when core is missing/incompatible.
 - **Pack registration**: `src/PackRegistrar.php`
   - Registers with `contextualwp_register_sector_pack()`.
-  - Loads **schema extensions** when core is available (relationships, interpretation, ACF).
+  - Loads **schema extensions** when core is available (relationships, interpretation, ACF) and registers pack REST routes.
 - **Services**: `src/Services/*`
   - **RelationshipService** — manifest relationship rows from detected development-like, plot-like, and pipeline-like CPTs, taxonomy registration, and optional ACF link evidence.
   - **InterpretationService** — `housebuilder_pack` metadata on post types (manifest + REST) and aggregate interpretation via `contextualwp_schema_interpretation`.
   - **SchemaExtensionService** — keyword-based ACF field `semantic` tags and `semantic_groups` roll-ups.
+  - **PlotsRestService** / **PlotDatasetMapper** — `GET /wp-json/contextualwp-housebuilder/v1/plots`: read-only, authenticated (default capability `edit_posts`, filterable), **published** plot-like posts; public monitoring fields only. Query `page` and `per_page` (default **500**, max **500**). Filter **`contextualwp_housebuilder_plot_meta_key_candidates`** supplies ordered meta key candidates per logical field for site-specific ACF/meta naming. Response objects include `id`, `wp_id`, `title`, `status`, `price`, `bedrooms`, `development`, `house_type`, `url`, and `last_updated` where available.
   - **SiteStructureHints** — read-only helpers (public CPT lists by role, taxonomy rules, ACF field graph inspection).
   - **HousebuilderStructuralSignals** — normalised token-based classifiers for CPTs and taxonomies; conservative synonyms and exclusion rules (no content inspection).
 
-**Current focus areas** for this pack: **relationships** (manifest edges and evidence), **schema interpretation** (post types and taxonomies), **ACF semantics** (field-level tags), and **broader structural detection** (registration metadata and naming signals, not values).
+**Current focus areas** for this pack: **relationships** (manifest edges and evidence), **schema interpretation** (post types and taxonomies), **ACF semantics** (field-level tags), **plot dataset REST** (monitoring exports for authenticated clients), and **broader structural detection** (registration metadata and naming signals, not values).
 
 ## Requirements
 

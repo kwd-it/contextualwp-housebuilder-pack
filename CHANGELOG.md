@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.0 - 2026-04-28
+
+### Added
+
+- Read-only authenticated REST endpoint **`GET /wp-json/contextualwp-housebuilder/v1/plots`** (for example Contextual Console): published **plot-like** posts only, public monitoring fields (`id`, `wp_id`, `title`, `status`, `price`, `bedrooms`, `development`, `house_type`, `url`, `last_updated` where available; `null` when missing).
+- Pagination query args `page` and `per_page` (default **500**, maximum **500**); response is a JSON array only (no total count in the body).
+- Filter **`contextualwp_housebuilder_plot_meta_key_candidates`** — ordered post meta key lists per logical field for site-specific naming.
+- Filter **`contextualwp_housebuilder_rest_plots_capability`** — override default **`edit_posts`** permission (aligned with ContextualWP editor-facing REST patterns).
+
 ## 0.3.1 - 2026-04-25
 
 ### Fixed
