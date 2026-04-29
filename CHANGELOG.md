@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.1 - 2026-04-29
+
+### Fixed
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: the **`limit`** query parameter is now applied (same **500** maximum as **`per_page`**). **`per_page`** is unchanged; when both appear in the query string, **`per_page`** takes precedence. Non-numeric or empty values for **`limit`** / **`per_page`** in the query fall back to the default page size; numeric values clamp to **1–500**. Response shape unchanged.
+
+### Added
+
+- PHPUnit coverage for plot list pagination resolution (`PlotsRestQueryLimits`); run **`composer test`** or **`vendor/bin/phpunit`**.
+
 ## 0.4.0 - 2026-04-28
 
 ### Added
