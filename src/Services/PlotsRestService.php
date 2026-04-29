@@ -41,12 +41,12 @@ final class PlotsRestService
 					'sanitize_callback' => static fn ($v): int => \max(1, (int) $v),
 				],
 				'per_page' => [
-					'description' => \__('Maximum items per page (capped at 500). No total count is returned; stop when a page has fewer items than per_page.', 'contextualwp-housebuilder-pack'),
+					'description' => \__('Maximum items per page (capped at 500). Clients may also send limit when per_page is omitted from the query string. No total count is returned; stop when a page has fewer items than per_page.', 'contextualwp-housebuilder-pack'),
 					'type' => 'integer',
-					'default' => 500,
+					'default' => PlotsRestQueryLimits::DEFAULT_PER_PAGE,
 					'minimum' => 1,
-					'maximum' => 500,
-					'sanitize_callback' => static fn ($v): int => \max(1, \min(500, (int) $v)),
+					'maximum' => PlotsRestQueryLimits::MAX_PER_PAGE,
+					'sanitize_callback' => static fn ($v): int => \max(1, \min(PlotsRestQueryLimits::MAX_PER_PAGE, (int) $v)),
 				],
 			],
 		]);
@@ -71,16 +71,14 @@ final class PlotsRestService
 		}
 
 		$page = (int) $request->get_param('page');
-		$perPage = (int) $request->get_param('per_page');
-		if ($page < 1) {
-			$page = 1;
-		}
-		if ($perPage < 1) {
-			$perPage = 500;
-		}
-		if ($perPage > 500) {
-			$perPage = 500;
-		}
+		$perPageFallback = (int) $request->get_param('per_page');
+		$resolved = PlotsRestQueryLimits::resolvePageAndPerPage(
+			$page,
+			$perPageFallback,
+			$request->get_query_params()
+		);
+		$page = $resolved['page'];
+		$perPage = $resolved['per_page'];
 
 		$metaKeys = $this->mergeMetaKeyMap(PlotDatasetMapper::defaultMetaKeyMap());
 
