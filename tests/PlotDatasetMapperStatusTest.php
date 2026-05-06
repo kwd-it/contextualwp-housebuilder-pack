@@ -9,7 +9,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Plot status is read from the plot post’s meta only (not from linked development/house-type posts).
- * These cases mirror ACF-style choice storage that previously produced null after normalisation.
+ * Covers ACF-style choice storage (`value` / `label`, single-element lists, two-item `[ value, label ]`
+ * lists) and mapper behaviour that skips earlier meta keys when their value still normalises to null.
  */
 final class PlotDatasetMapperStatusTest extends TestCase
 {
@@ -31,6 +32,16 @@ final class PlotDatasetMapperStatusTest extends TestCase
 	public function testSingleElementStringList(): void
 	{
 		$this->assertSame('reserved', PlotDatasetMapper::normalizePlotStatusMetaValue(['reserved']));
+	}
+
+	public function testTwoItemNumericListValueThenLabel(): void
+	{
+		$this->assertSame('available', PlotDatasetMapper::normalizePlotStatusMetaValue(['available', 'Available']));
+	}
+
+	public function testTwoItemNumericListSkipsEmptyValueUsesLabel(): void
+	{
+		$this->assertSame('sold', PlotDatasetMapper::normalizePlotStatusMetaValue(['', 'Sold']));
 	}
 
 	public function testNumericStringPreserved(): void

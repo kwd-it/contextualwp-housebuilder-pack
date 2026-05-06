@@ -72,7 +72,7 @@ final class PlotDatasetMapper
 		$postType = $post->post_type;
 		$postId = (int) $post->ID;
 
-		$statusRaw = self::firstScalarMeta($postId, $metaKeys['status'] ?? []);
+		$statusNormalized = self::firstResolvedPlotStatus($postId, $metaKeys['status'] ?? []);
 		$priceRaw = self::firstScalarMeta($postId, $metaKeys['price'] ?? []);
 		$bedroomsRaw = self::firstScalarMeta($postId, $metaKeys['bedrooms'] ?? []);
 		$houseRefRaw = self::firstScalarMeta($postId, $metaKeys['house_type_ref'] ?? []);
@@ -85,7 +85,7 @@ final class PlotDatasetMapper
 			'id' => $postType . '-' . $postId,
 			'wp_id' => $postId,
 			'title' => (string) \get_the_title($post),
-			'status' => self::normalizeStatusString($statusRaw),
+			'status' => $statusNormalized,
 			'price' => self::coercePriceNumber($priceRaw),
 			'bedrooms' => self::coerceNonNegativeInt($bedroomsRaw),
 			'development' => $development,
@@ -122,6 +122,37 @@ final class PlotDatasetMapper
 		$ts = \strtotime($gmt . ' UTC');
 
 		return $ts !== false ? \gmdate('c', $ts) : null;
+	}
+
+	/**
+	 * Walks status meta key candidates until a value normalises to a non-null plot status.
+	 *
+	 * Unlike {@see firstScalarMeta()}, this avoids stopping on an earlier key whose raw meta is
+	 * non-empty but in an unsupported shape (legacy ACF exports, tuple lists, etc.), so a later
+	 * key such as `status` can still win.
+	 *
+	 * @param list<string> $keys
+	 */
+	private static function firstResolvedPlotStatus(int $postId, array $keys): ?string
+	{
+		foreach ($keys as $key) {
+			if ($key === '') {
+				continue;
+			}
+			$val = \get_post_meta($postId, $key, true);
+			if ($val === '' || $val === null || $val === false) {
+				continue;
+			}
+			if (\is_array($val) && $val === []) {
+				continue;
+			}
+			$normalized = self::normalizeStatusString($val);
+			if ($normalized !== null) {
+				return $normalized;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -202,6 +233,23 @@ final class PlotDatasetMapper
 			$only = \reset($raw);
 			if (\is_string($only) || \is_int($only) || \is_float($only)) {
 				return $only;
+			}
+		}
+
+		// Some stacks store a single choice as a two-item list `[ value, label ]` (numeric keys only).
+		if (\array_is_list($raw) && \count($raw) === 2) {
+			foreach ([$raw[0], $raw[1]] as $candidate) {
+				if (\is_string($candidate)) {
+					$t = \trim($candidate);
+					if ($t !== '') {
+						return $t;
+					}
+
+					continue;
+				}
+				if (\is_int($candidate) || \is_float($candidate)) {
+					return $candidate;
+				}
 			}
 		}
 
