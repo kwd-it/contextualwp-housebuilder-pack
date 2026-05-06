@@ -147,8 +147,22 @@ final class PlotDatasetMapper
 		return null;
 	}
 
+	/**
+	 * Normalises plot status meta for REST export.
+	 *
+	 * ACF and similar stores often return choice fields as arrays (`value` / `label`), which
+	 * must be coerced to a scalar string for the REST payload.
+	 *
+	 * @internal Exposed for PHPUnit; not a stable public API for other code.
+	 */
+	public static function normalizePlotStatusMetaValue(mixed $raw): ?string
+	{
+		return self::normalizeStatusString($raw);
+	}
+
 	private static function normalizeStatusString(mixed $raw): ?string
 	{
+		$raw = self::unwrapChoiceLikeMetaScalar($raw);
 		if ($raw === null) {
 			return null;
 		}
@@ -163,6 +177,35 @@ final class PlotDatasetMapper
 		$t = \strtolower(\trim($raw));
 
 		return $t !== '' ? $t : null;
+	}
+
+	/**
+	 * Unwrap common meta shapes (e.g. ACF select / radio) to a scalar before normalisation.
+	 */
+	private static function unwrapChoiceLikeMetaScalar(mixed $raw): mixed
+	{
+		if (!\is_array($raw)) {
+			return $raw;
+		}
+		if (\array_key_exists('value', $raw)) {
+			$v = $raw['value'];
+			if ($v !== '' && $v !== null && $v !== false) {
+				return $v;
+			}
+		}
+		if (isset($raw['label']) && \is_string($raw['label'])) {
+			$t = \trim($raw['label']);
+
+			return $t !== '' ? $t : null;
+		}
+		if (\count($raw) === 1) {
+			$only = \reset($raw);
+			if (\is_string($only) || \is_int($only) || \is_float($only)) {
+				return $only;
+			}
+		}
+
+		return $raw;
 	}
 
 	/**
