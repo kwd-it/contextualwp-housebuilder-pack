@@ -10,7 +10,7 @@ This document is for contributors to this repository. Keep wording professional 
   - Avoid duplicating or forking core functionality.
   - Fail gracefully when core is missing or incompatible.
 
-## Status: 0.4.2 (plot dataset REST + `limit` / `per_page` alignment; Composer-managed autoload patch is 0.3.1; structural detection pass is 0.3.0)
+## Status: 0.4.3 (plots REST legacy plot `status` meta resolution; plot dataset REST + `limit` / `per_page` alignment; Composer-managed autoload patch is 0.3.1; structural detection pass is 0.3.0)
 
 Implemented (cumulative):
 

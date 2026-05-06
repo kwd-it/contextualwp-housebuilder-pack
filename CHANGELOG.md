@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.3 - 2026-05-06
+
+### Fixed
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: plot **`status`** now resolves legacy meta values more reliably (ordered meta key candidates are walked until a value normalises; two-item `[value, label]` choice lists are supported). Response shape unchanged.
+
 ## 0.4.2 - 2026-05-06
 
 ### Fixed
