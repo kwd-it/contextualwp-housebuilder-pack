@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.2 - 2026-05-06
+
+### Fixed
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: plot **`status`** is no longer dropped when stored meta uses common ACF-style choice shapes (for example `value` / `label` arrays). Response shape unchanged.
+
+### Added
+
+- PHPUnit coverage for plot status meta normalisation (`PlotDatasetMapper`).
+
 ## 0.4.1 - 2026-04-29
 
 ### Fixed

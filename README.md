@@ -2,7 +2,7 @@
 
 Housebuilder sector pack plugin for ContextualWP.
 
-This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.1** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
+This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.2** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
 
 ## Why this exists
 
