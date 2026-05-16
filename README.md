@@ -2,7 +2,7 @@
 
 Housebuilder sector pack plugin for ContextualWP.
 
-This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.3** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
+This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.4** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
 
 ## Why this exists
 
@@ -31,7 +31,7 @@ This repository is the **first sector pack** for ContextualWP and remains a **cl
   - **RelationshipService** — manifest relationship rows from detected development-like, plot-like, and pipeline-like CPTs, taxonomy registration, and optional ACF link evidence.
   - **InterpretationService** — `housebuilder_pack` metadata on post types (manifest + REST) and aggregate interpretation via `contextualwp_schema_interpretation`.
   - **SchemaExtensionService** — keyword-based ACF field `semantic` tags and `semantic_groups` roll-ups.
-  - **PlotsRestService** / **PlotDatasetMapper** — `GET /wp-json/contextualwp-housebuilder/v1/plots`: read-only, authenticated (default capability `edit_posts`, filterable), **published** plot-like posts; public monitoring fields only. Query `page` and `per_page` (default **500**, max **500**); optional **`limit`** uses the same cap and applies when **`per_page` is not present** in the query string (if both are sent, `per_page` wins). Filter **`contextualwp_housebuilder_plot_meta_key_candidates`** supplies ordered meta key candidates per logical field for site-specific ACF/meta naming. Response objects include `id`, `wp_id`, `title`, `status`, `price`, `bedrooms`, `development`, `house_type`, `url`, and `last_updated` where available.
+  - **PlotsRestService** / **PlotDatasetMapper** — `GET /wp-json/contextualwp-housebuilder/v1/plots`: read-only, authenticated (default capability `edit_posts`, filterable), **published** plot-like posts; public monitoring fields only. Query `page` and `per_page` (default **500**, max **500**); optional **`limit`** uses the same cap and applies when **`per_page` is not present** in the query string (if both are sent, `per_page` wins). Filter **`contextualwp_housebuilder_plot_meta_key_candidates`** supplies ordered meta key candidates per logical field for site-specific ACF/meta naming. Response objects include `id`, `wp_id`, `title`, `status`, `price`, `bedrooms`, `development`, `house_type`, `url`, `last_updated`, and **`last_modified_by`** (safe display label for who last modified the plot; **`null`** when unavailable) where available.
   - **SiteStructureHints** — read-only helpers (public CPT lists by role, taxonomy rules, ACF field graph inspection).
   - **HousebuilderStructuralSignals** — normalised token-based classifiers for CPTs and taxonomies; conservative synonyms and exclusion rules (no content inspection).
 
@@ -41,7 +41,7 @@ This repository is the **first sector pack** for ContextualWP and remains a **cl
 
 - WordPress: **6.4+**
 - PHP: **8.1+**
-- ContextualWP core: **1.1+**
+- ContextualWP core: **1.3.3+**
 
 ## Installation
 
@@ -67,7 +67,7 @@ If wp-admin shows that the pack **could not load** (classes missing), fix the Co
 
 ## Compatibility notes
 
-This plugin targets ContextualWP **v1.1+**.
+This plugin targets ContextualWP **v1.3.3+** (plots REST **`last_modified_by`** requires the core safe modified-author helper).
 
 Version detection is best-effort: it checks for `CONTEXTUALWP_VERSION` when defined; if core does not expose a version constant, the pack treats the environment as compatible when the registration function exists.
 

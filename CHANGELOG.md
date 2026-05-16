@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.4 - 2026-05-16
+
+### Added
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: each plot row now includes **`last_modified_by`** — a safe display label (WordPress `display_name` only) for the user who last modified the plot; **`null`** when no safe label is available. Does not expose user IDs, logins, email, roles, capabilities, or profile data.
+
+### Changed
+
+- Minimum **ContextualWP core** version for this pack: **1.3.3** (required for the safe modified-author helper).
+
 ## 0.4.3 - 2026-05-06
 
 ### Fixed

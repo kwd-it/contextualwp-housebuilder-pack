@@ -10,7 +10,7 @@ This document is for contributors to this repository. Keep wording professional 
   - Avoid duplicating or forking core functionality.
   - Fail gracefully when core is missing or incompatible.
 
-## Status: 0.4.3 (plots REST legacy plot `status` meta resolution; plot dataset REST + `limit` / `per_page` alignment; Composer-managed autoload patch is 0.3.1; structural detection pass is 0.3.0)
+## Status: 0.4.4 (plots REST `last_modified_by` safe modified-author label; min ContextualWP core 1.3.3; 0.4.3 plots REST `status` meta resolution; plot dataset REST + `limit` / `per_page` alignment; Composer-managed autoload patch is 0.3.1; structural detection pass is 0.3.0)
 
 Implemented (cumulative):
 
@@ -21,7 +21,7 @@ Implemented (cumulative):
 - **`RelationshipService`**: `contextualwp_manifest_schema_relationships` — edges between detected **development-site-like** and **plot-like** CPTs; optional ACF `relationship` / `post_object` evidence; taxonomy→plot rows when `isPlotDevelopmentClassifierTaxonomy()` passes; **pipeline-like**→development-like when both sets are non-empty.
 - **`InterpretationService`**: `contextualwp_schema` and `contextualwp_manifest_schema` — `housebuilder_pack` blocks for every public CPT that receives a structural profile; `contextualwp_schema_interpretation` — aggregate `housebuilder_pack` with post type and taxonomy maps (including `plot_development_classifier` only under the stricter taxonomy path).
 - **`SchemaExtensionService`**: `contextualwp_acf_schema_field_groups` — per-field `semantic` and `semantic_groups` as in 0.2.0.
-- **`PlotsRestService`** / **`PlotDatasetMapper`** (0.4.0): `GET /wp-json/contextualwp-housebuilder/v1/plots` — read-only list of **published** plot-like posts; default `edit_posts` permission (filter `contextualwp_housebuilder_rest_plots_capability`); `page` / `per_page` (default **500**, cap **500**); optional query **`limit`** (same cap) when `per_page` is omitted from the query; filter `contextualwp_housebuilder_plot_meta_key_candidates` for ordered meta key resolution; fields `id`, `wp_id`, `title`, `status`, `price`, `bedrooms`, `development`, `house_type`, `url`, `last_updated` when available.
+- **`PlotsRestService`** / **`PlotDatasetMapper`** (0.4.0, **`last_modified_by`** 0.4.4): `GET /wp-json/contextualwp-housebuilder/v1/plots` — read-only list of **published** plot-like posts; default `edit_posts` permission (filter `contextualwp_housebuilder_rest_plots_capability`); `page` / `per_page` (default **500**, cap **500**); optional query **`limit`** (same cap) when `per_page` is omitted from the query; filter `contextualwp_housebuilder_plot_meta_key_candidates` for ordered meta key resolution; fields `id`, `wp_id`, `title`, `status`, `price`, `bedrooms`, `development`, `house_type`, `url`, `last_updated`, **`last_modified_by`** (safe `display_name` label via ContextualWP core; `null` when unavailable) when available. Requires ContextualWP core **1.3.3+**.
 - **`SiteStructureHints`**: delegates public CPT discovery and taxonomy helpers to **HousebuilderStructuralSignals**; `plotLikePublicPostTypeSlugs()`, `developmentSiteLikePublicPostTypeSlugs()`, `pipelineDevelopmentLikePublicPostTypeSlugs()`, `isGenericDevelopmentTaxonomy()` / `isPlotDevelopmentClassifierTaxonomy()`, ACF graph walk unchanged.
 
 **This iteration (0.3.0)** in plain terms:
