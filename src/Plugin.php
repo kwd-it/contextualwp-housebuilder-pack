@@ -29,7 +29,7 @@ final class Plugin
 
 		$min = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
-			: '1.1.0';
+			: '1.3.3';
 
 		if (!Compatibility::isCoreCompatible($min)) {
 			$this->maybeAdminNoticeIncompatibleCore($min, Compatibility::getCoreVersion());

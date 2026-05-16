@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ContextualWP\HousebuilderPack\Services;
 
+use ContextualWP\Helpers\Utilities;
+
 /**
  * Maps plot-like posts to a stable public monitoring shape for REST consumers.
  *
@@ -92,7 +94,34 @@ final class PlotDatasetMapper
 			'house_type' => $houseType,
 			'url' => self::safePermalink($post),
 			'last_updated' => self::modifiedIso8601Utc($post),
+			'last_modified_by' => self::lastModifiedByLabel($post),
 		];
+	}
+
+	/**
+	 * Safe display label for the user who last modified the plot (display_name only; no user IDs or profile fields).
+	 *
+	 * @internal Exposed for PHPUnit; not a stable public API for other code.
+	 */
+	public static function resolveLastModifiedByLabel(\WP_Post $post): ?string
+	{
+		return self::lastModifiedByLabel($post);
+	}
+
+	private static function lastModifiedByLabel(\WP_Post $post): ?string
+	{
+		if (!\method_exists(Utilities::class, 'get_safe_modified_author_display_name')) {
+			return null;
+		}
+
+		$label = Utilities::get_safe_modified_author_display_name($post);
+		if (!\is_string($label)) {
+			return null;
+		}
+
+		$trimmed = \trim($label);
+
+		return $trimmed !== '' ? $trimmed : null;
 	}
 
 	private static function safePermalink(\WP_Post $post): ?string

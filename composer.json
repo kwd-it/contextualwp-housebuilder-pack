@@ -22,8 +22,14 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "ContextualWP\\HousebuilderPack\\Tests\\": "tests/"
-    }
+      "ContextualWP\\HousebuilderPack\\Tests\\": "tests/",
+      "ContextualWP\\Helpers\\": "tests/stubs/Helpers/"
+    },
+    "files": [
+      "tests/stubs/WP_Post.php",
+      "tests/stubs/wp-plot-mapper-functions.php",
+      "tests/stubs/wp-plots-rest-functions.php"
+    ]
   },
   "scripts": {
     "test": "phpunit"

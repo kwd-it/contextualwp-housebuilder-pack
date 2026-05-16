@@ -64,7 +64,7 @@ final class PackRegistrar
 
 		$minCore = \defined('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
 			? (string) \constant('CONTEXTUALWP_HOUSEBUILDER_PACK_MIN_CONTEXTUALWP_VERSION')
-			: '1.1.0';
+			: '1.3.3';
 
 		return [
 			'slug' => self::SECTOR_SLUG,
