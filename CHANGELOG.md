@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.5 - 2026-05-17
+
+### Fixed
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: authenticated plot dataset mapping now returns the assigned linked **development** post title when that development is **draft** or otherwise not published (for example pipeline monitoring where the plot is live but the parent development is still unpublished). Response shape unchanged; only the linked post **title** is exposed (not draft body, excerpts, or custom fields). **`house_type`** linked titles remain **publish-only**. Linked development titles for **trash** or **auto-draft** posts are still omitted.
+
+### Added
+
+- PHPUnit coverage for development label resolution (`PlotDatasetMapperDevelopmentTest`).
+
 ## 0.4.4 - 2026-05-16
 
 ### Added
