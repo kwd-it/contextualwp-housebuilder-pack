@@ -355,7 +355,8 @@ final class PlotDatasetMapper
 			return $fromTax;
 		}
 
-		return self::publishedLinkedPostTitle($devRefRaw);
+		// Authenticated plots REST only; expose assigned development title even when the linked post is not published.
+		return self::linkedPostTitle($devRefRaw, false);
 	}
 
 	private static function developmentFromClassifierTaxonomy(\WP_Post $post): ?string
@@ -389,7 +390,7 @@ final class PlotDatasetMapper
 
 	private static function resolveHouseTypeLabel(mixed $houseRefRaw): ?string
 	{
-		$fromLink = self::publishedLinkedPostTitle($houseRefRaw);
+		$fromLink = self::linkedPostTitle($houseRefRaw, true);
 		if ($fromLink !== null) {
 			return $fromLink;
 		}
@@ -397,7 +398,11 @@ final class PlotDatasetMapper
 		return null;
 	}
 
-	private static function publishedLinkedPostTitle(mixed $ref): ?string
+	/**
+	 * @param bool $publishedOnly When true, omit titles for non-published linked posts (house type).
+	 *                            When false, include draft/pending/private assigned development titles for monitoring.
+	 */
+	private static function linkedPostTitle(mixed $ref, bool $publishedOnly): ?string
 	{
 		if ($ref === null || $ref === '' || $ref === false) {
 			return null;
@@ -429,7 +434,11 @@ final class PlotDatasetMapper
 		if (!$linked instanceof \WP_Post) {
 			return null;
 		}
-		if ($linked->post_status !== 'publish') {
+		if ($publishedOnly) {
+			if ($linked->post_status !== 'publish') {
+				return null;
+			}
+		} elseif (\in_array($linked->post_status, ['trash', 'auto-draft'], true)) {
 			return null;
 		}
 		$title = \get_the_title($linked);
