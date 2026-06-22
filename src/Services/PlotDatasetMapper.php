@@ -62,6 +62,13 @@ final class PlotDatasetMapper
 				'scheme',
 				'scheme_id',
 			],
+			'floor_plan' => [
+				'floor_plan',
+				'floorplan',
+				'floor_plan_image',
+				'plan_image',
+				'plot_floor_plan',
+			],
 		];
 	}
 
@@ -83,6 +90,11 @@ final class PlotDatasetMapper
 		$development = self::resolveDevelopmentLabel($post, $devRefRaw);
 		$houseType = self::resolveHouseTypeLabel($houseRefRaw);
 
+		$developmentMetaKeys = self::mergeDevelopmentMetaKeyMap(CompletenessSignals::defaultDevelopmentMetaKeyMap());
+		$developmentPost = self::resolveLinkedPost($devRefRaw, false);
+		$plotCompleteness = CompletenessSignals::plotSignals($post, $metaKeys);
+		$developmentCompleteness = CompletenessSignals::developmentSignals($developmentPost, $developmentMetaKeys);
+
 		return [
 			'id' => $postType . '-' . $postId,
 			'wp_id' => $postId,
@@ -95,6 +107,13 @@ final class PlotDatasetMapper
 			'url' => self::safePermalink($post),
 			'last_updated' => self::modifiedIso8601Utc($post),
 			'last_modified_by' => self::lastModifiedByLabel($post),
+			'has_floor_plan' => $plotCompleteness['has_floor_plan'] ?? null,
+			'floor_plan_required' => $plotCompleteness['floor_plan_required'] ?? null,
+			'floor_plan_completeness_status' => $plotCompleteness['floor_plan_completeness_status'] ?? 'unknown',
+			'has_intro_video' => $developmentCompleteness['has_intro_video'] ?? null,
+			'has_intro_image' => $developmentCompleteness['has_intro_image'] ?? null,
+			'intro_media_type' => $developmentCompleteness['intro_media_type'] ?? null,
+			'intro_media_completeness_status' => $developmentCompleteness['intro_media_completeness_status'] ?? 'unknown',
 		];
 	}
 
@@ -348,6 +367,40 @@ final class PlotDatasetMapper
 		return null;
 	}
 
+	/**
+	 * @param array<string, list<string>> $defaults
+	 * @return array<string, list<string>>
+	 */
+	public static function mergeDevelopmentMetaKeyMap(array $defaults): array
+	{
+		$custom = \apply_filters('contextualwp_housebuilder_development_meta_key_candidates', $defaults);
+		if (!\is_array($custom)) {
+			return $defaults;
+		}
+
+		$out = $defaults;
+		foreach ($custom as $logical => $keys) {
+			if (!\is_string($logical) || $logical === '' || !\is_array($keys)) {
+				continue;
+			}
+			$clean = [];
+			foreach ($keys as $k) {
+				if (!\is_string($k) && !\is_int($k)) {
+					continue;
+				}
+				$s = \trim((string) $k);
+				if ($s !== '') {
+					$clean[] = $s;
+				}
+			}
+			if ($clean !== []) {
+				$out[$logical] = $clean;
+			}
+		}
+
+		return $out;
+	}
+
 	private static function resolveDevelopmentLabel(\WP_Post $post, mixed $devRefRaw): ?string
 	{
 		$fromTax = self::developmentFromClassifierTaxonomy($post);
@@ -404,29 +457,34 @@ final class PlotDatasetMapper
 	 */
 	private static function linkedPostTitle(mixed $ref, bool $publishedOnly): ?string
 	{
-		if ($ref === null || $ref === '' || $ref === false) {
-			return null;
-		}
-
-		$postId = null;
-		if (\is_int($ref) || \is_float($ref)) {
-			$postId = (int) $ref;
-		} elseif (\is_string($ref) && \ctype_digit($ref)) {
-			$postId = (int) $ref;
-		} elseif (\is_array($ref)) {
-			$first = $ref[0] ?? null;
-			if (\is_numeric($first)) {
-				$postId = (int) $first;
-			}
-		}
-
-		if ($postId === null || $postId <= 0) {
+		$linked = self::resolveLinkedPost($ref, $publishedOnly);
+		if (!$linked instanceof \WP_Post) {
 			if (\is_string($ref)) {
 				$t = \trim($ref);
 
 				return $t !== '' ? $t : null;
 			}
 
+			return null;
+		}
+		$title = \get_the_title($linked);
+		$title = \is_string($title) ? \trim($title) : '';
+
+		return $title !== '' ? $title : null;
+	}
+
+	/**
+	 * @param bool $publishedOnly When true, omit non-published linked posts (house type).
+	 *                            When false, include draft/pending/private assigned development posts for monitoring.
+	 */
+	private static function resolveLinkedPost(mixed $ref, bool $publishedOnly): ?\WP_Post
+	{
+		if ($ref === null || $ref === '' || $ref === false) {
+			return null;
+		}
+
+		$postId = self::linkedPostIdFromRef($ref);
+		if ($postId === null || $postId <= 0) {
 			return null;
 		}
 
@@ -441,9 +499,25 @@ final class PlotDatasetMapper
 		} elseif (\in_array($linked->post_status, ['trash', 'auto-draft'], true)) {
 			return null;
 		}
-		$title = \get_the_title($linked);
-		$title = \is_string($title) ? \trim($title) : '';
 
-		return $title !== '' ? $title : null;
+		return $linked;
+	}
+
+	private static function linkedPostIdFromRef(mixed $ref): ?int
+	{
+		if (\is_int($ref) || \is_float($ref)) {
+			return (int) $ref;
+		}
+		if (\is_string($ref) && \ctype_digit($ref)) {
+			return (int) $ref;
+		}
+		if (\is_array($ref)) {
+			$first = $ref[0] ?? null;
+			if (\is_numeric($first)) {
+				return (int) $first;
+			}
+		}
+
+		return null;
 	}
 }

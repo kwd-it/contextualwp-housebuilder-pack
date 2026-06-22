@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.6 - 2026-06-22
+
+### Added
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: additive **asset completeness signals** for downstream monitoring (for example Contextual Console). Plot rows now include **`has_floor_plan`**, **`floor_plan_required`**, and **`floor_plan_completeness_status`**. When a plot links to a development post, rows also include **`has_intro_video`**, **`has_intro_image`**, **`intro_media_type`**, and **`intro_media_completeness_status`** (derived from the linked development's meta). Status values are **`present`**, **`missing`**, or **`unknown`** only; the pack does not raise issues or enforce editor validation.
+- Filters for project-specific required-asset rules: **`contextualwp_housebuilder_plot_floor_plan_required`**, **`contextualwp_housebuilder_development_intro_media_required`**, **`contextualwp_housebuilder_plot_completeness_signals`**, **`contextualwp_housebuilder_development_completeness_signals`**.
+- Filter **`contextualwp_housebuilder_development_meta_key_candidates`**: ordered post meta key lists for development intro media fields (mirrors the plot meta key candidate pattern).
+- Default meta key candidates for **`floor_plan`** on plots and **`intro_video`** / **`intro_image`** on linked developments; extend via existing **`contextualwp_housebuilder_plot_meta_key_candidates`** and the new development filter.
+- PHPUnit coverage for completeness signal mapping (`PlotDatasetMapperCompletenessTest`).
+
 ## 0.4.5 - 2026-05-17
 
 ### Fixed
@@ -16,7 +26,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: each plot row now includes **`last_modified_by`** — a safe display label (WordPress `display_name` only) for the user who last modified the plot; **`null`** when no safe label is available. Does not expose user IDs, logins, email, roles, capabilities, or profile data.
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: each plot row now includes **`last_modified_by`**: a safe display label (WordPress `display_name` only) for the user who last modified the plot; **`null`** when no safe label is available. Does not expose user IDs, logins, email, roles, capabilities, or profile data.
 
 ### Changed
 
@@ -42,7 +52,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: the **`limit`** query parameter is now applied (same **500** maximum as **`per_page`**). **`per_page`** is unchanged; when both appear in the query string, **`per_page`** takes precedence. Non-numeric or empty values for **`limit`** / **`per_page`** in the query fall back to the default page size; numeric values clamp to **1–500**. Response shape unchanged.
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: the **`limit`** query parameter is now applied (same **500** maximum as **`per_page`**). **`per_page`** is unchanged; when both appear in the query string, **`per_page`** takes precedence. Non-numeric or empty values for **`limit`** / **`per_page`** in the query fall back to the default page size; numeric values clamp to **1-500**. Response shape unchanged.
 
 ### Added
 
@@ -54,8 +64,8 @@ All notable changes to this project will be documented in this file.
 
 - Read-only authenticated REST endpoint **`GET /wp-json/contextualwp-housebuilder/v1/plots`** (for example Contextual Console): published **plot-like** posts only, public monitoring fields (`id`, `wp_id`, `title`, `status`, `price`, `bedrooms`, `development`, `house_type`, `url`, `last_updated` where available; `null` when missing).
 - Pagination query args `page` and `per_page` (default **500**, maximum **500**); response is a JSON array only (no total count in the body).
-- Filter **`contextualwp_housebuilder_plot_meta_key_candidates`** — ordered post meta key lists per logical field for site-specific naming.
-- Filter **`contextualwp_housebuilder_rest_plots_capability`** — override default **`edit_posts`** permission (aligned with ContextualWP editor-facing REST patterns).
+- Filter **`contextualwp_housebuilder_plot_meta_key_candidates`**: ordered post meta key lists per logical field for site-specific naming.
+- Filter **`contextualwp_housebuilder_rest_plots_capability`**: override default **`edit_posts`** permission (aligned with ContextualWP editor-facing REST patterns).
 
 ## 0.3.1 - 2026-04-25
 
@@ -75,14 +85,14 @@ Broadened, still **conservative** structural inference for housebuilder-style re
 
 - **Structural detection**: Post types are classified using **normalised slug tokens**, compact slug forms, and selected **label-derived tokens** (no post or field values). Supports development-like, plot- or unit-like, pipeline-like, and (with a high bar) house-type- or property-model-like roles. **Exclusion tokens** on slugs suppress careers, blog, and similar CPTs from housebuilder inference.
 - **Interpretation order**: Pipeline-like content takes precedence over house-type, development, and plot roles when multiple signals could apply.
-- **Taxonomy classifier**: Plot–development classifier rows and taxonomy interpretation require taxonomies that **apply only to detected plot-like CPTs** and pass **stricter** development/scheme/site/community naming checks; label-derived matches require corroborating **slug tokens** to avoid substring false positives (for example “site” inside unrelated words).
-- **Relationships**: Manifest relationship discovery uses the same detected endpoint sets (not a fixed trio of slugs), including pipeline→development edges where both sides are detected.
+- **Taxonomy classifier**: Plot-development classifier rows and taxonomy interpretation require taxonomies that **apply only to detected plot-like CPTs** and pass **stricter** development/scheme/site/community naming checks; label-derived matches require corroborating **slug tokens** to avoid substring false positives (for example "site" inside unrelated words).
+- **Relationships**: Manifest relationship discovery uses the same detected endpoint sets (not a fixed trio of slugs), including pipeline to development edges where both sides are detected.
 
 ## 0.2.0 - 2026-03-31
 
 First functional enhancement pass focused on structure consumers (manifest, REST schema, interpretation aggregate, ACF schema).
 
-- **Manifest relationships**: Extends `contextualwp_manifest_schema_relationships` with rule-based edges for common housebuilder CPTs (`developments`, `plots`, `future_developments`), optional ACF relationship/post_object evidence between developments and plots, and conservative taxonomy→plot rows when a taxonomy matches generic “development” naming and applies only to plots.
+- **Manifest relationships**: Extends `contextualwp_manifest_schema_relationships` with rule-based edges for common housebuilder CPTs (`developments`, `plots`, `future_developments`), optional ACF relationship/post_object evidence between developments and plots, and conservative taxonomy to plot rows when a taxonomy matches generic "development" naming and applies only to plots.
 - **Post type interpretation**: When matching public CPTs exist, adds a `housebuilder_pack` block to manifest and REST `post_types` entries with `entity_kind`, `summary`, and `typical_use` (or equivalent taxonomy roles).
 - **Aggregate interpretation**: Contributes a `housebuilder_pack` subtree via `contextualwp_schema_interpretation` (post type and taxonomy interpretation maps for consumers that read the combined interpretation object).
 - **ACF semantics**: Extends exported ACF field group data with per-field `semantic` objects (keyword substring rules on name, label, instructions) and rolled-up `semantic_groups` per group when unambiguous; ambiguous or tied matches emit no semantic tag.

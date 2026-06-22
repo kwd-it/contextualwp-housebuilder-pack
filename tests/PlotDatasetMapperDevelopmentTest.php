@@ -147,7 +147,26 @@ final class PlotDatasetMapperDevelopmentTest extends TestCase
 	private function assertResponseShapeKeys(array $mapped): void
 	{
 		$this->assertSame(
-			['id', 'wp_id', 'title', 'status', 'price', 'bedrooms', 'development', 'house_type', 'url', 'last_updated', 'last_modified_by'],
+			[
+				'id',
+				'wp_id',
+				'title',
+				'status',
+				'price',
+				'bedrooms',
+				'development',
+				'house_type',
+				'url',
+				'last_updated',
+				'last_modified_by',
+				'has_floor_plan',
+				'floor_plan_required',
+				'floor_plan_completeness_status',
+				'has_intro_video',
+				'has_intro_image',
+				'intro_media_type',
+				'intro_media_completeness_status',
+			],
 			\array_keys($mapped)
 		);
 	}

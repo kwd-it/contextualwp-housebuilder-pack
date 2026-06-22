@@ -21,6 +21,11 @@ if (!\function_exists('apply_filters')) {
 	 */
 	function apply_filters(string $hook, $value, mixed ...$args)
 	{
+		$callbacks = $GLOBALS['contextualwp_housebuilder_test_filters'][$hook] ?? null;
+		if (\is_callable($callbacks)) {
+			return $callbacks($value, ...$args);
+		}
+
 		return $value;
 	}
 }
