@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.7 - 2026-06-23
+
+### Changed
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: **default required-asset rules** for completeness signals introduced in 0.4.6. The endpoint can now emit actionable **`missing`** statuses in common real-world cases instead of staying on **`unknown`** when requirement was previously undetermined.
+- **Plot floor plans**: marketing-ready plot statuses (for example **`available`**, **`released`**, **`for sale`**, **`on market`**, **`coming soon`**) default to **`floor_plan_required: true`** when floor-plan meta key candidates are configured and presence is detectable. Non-marketing statuses (for example **`sold`**, **`reserved`**, **`under offer`**, **`exchanged`**, **`completed`**, **`unavailable`**) default to **`floor_plan_required: false`**. Unrecognised or missing plot status remains non-actionable (**`null`** requirement).
+- **Development intro media**: **published** linked developments default to requiring intro media when intro video/image meta key candidates are configured and presence was checked. Non-published linked developments (draft, private, pending, etc.) remain non-actionable by default.
+- Completeness statuses remain **`present`**, **`missing`**, or **`unknown`** only. **`unknown`** is intentionally non-actionable and covers both undetermined requirements and explicitly not-required assets.
+- Existing filters still override defaults: **`contextualwp_housebuilder_plot_floor_plan_required`**, **`contextualwp_housebuilder_development_intro_media_required`**, **`contextualwp_housebuilder_plot_completeness_signals`**, **`contextualwp_housebuilder_development_completeness_signals`**.
+
+### Added
+
+- PHPUnit coverage for default required-asset rules (`CompletenessSignalsTest`, extended `PlotDatasetMapperCompletenessTest`).
+
+### Notes
+
+- Intended to work with **Contextual Console v1.2.0**, which ingests these fields and can raise warnings when the plots endpoint returns actionable **`missing`** statuses.
+- Whether a given site produces warnings still depends on real source data, configured meta key candidates, inheritance or fallback behaviour, and any project-specific filters. This release improves conservative defaults; it does not guarantee warnings on every site.
+
 ## 0.4.6 - 2026-06-22
 
 ### Added

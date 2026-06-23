@@ -2,7 +2,7 @@
 
 Housebuilder sector pack plugin for ContextualWP.
 
-This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.6** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
+This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.7** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
 
 ## Why this exists
 
@@ -39,17 +39,30 @@ This repository is the **first sector pack** for ContextualWP and remains a **cl
 
 ### Plot REST completeness signals
 
-The plots endpoint exposes conservative **monitoring signals** only. Downstream tools (for example Contextual Console) decide whether to surface warnings or issues.
+The plots endpoint exposes conservative **monitoring signals** only. Downstream tools (for example **Contextual Console v1.2.0**) decide whether to surface warnings or issues when rows include actionable **`missing`** statuses. Signals stay **filterable**; defaults are improved in **0.4.7** but remain conservative.
 
 | Field | Scope | Values |
 |-------|--------|--------|
 | `has_floor_plan` | Plot | `true` / `false` / `null` |
-| `floor_plan_required` | Plot | `true` / `false` / `null` (default **`null`** = unknown) |
+| `floor_plan_required` | Plot | `true` / `false` / `null` |
 | `floor_plan_completeness_status` | Plot | `present` / `missing` / `unknown` |
 | `has_intro_video` | Linked development | `true` / `false` / `null` |
 | `has_intro_image` | Linked development | `true` / `false` / `null` |
 | `intro_media_type` | Linked development | `video` / `image` / `none` / `null` |
 | `intro_media_completeness_status` | Linked development | `present` / `missing` / `unknown` |
+
+**Default required rules (0.4.7+, before filters):**
+
+- **Plot floor plans**: when floor-plan meta key candidates are configured and presence is detectable, marketing-ready plot statuses (for example `available`, `released`, `for sale`, `on market`, `coming soon`) default to **`floor_plan_required: true`**. Non-marketing statuses (for example `sold`, `reserved`, `under offer`, `exchanged`, `completed`, `unavailable`) default to **`false`**. Unrecognised or missing plot status defaults to **`null`**.
+- **Development intro media**: when intro video/image meta key candidates are configured and presence was checked on the linked development, **published** developments default to requiring intro media. Non-published linked developments (draft, private, pending, etc.) default to **`null`** requirement.
+
+**Completeness status semantics:**
+
+- **`present`**: asset detected.
+- **`missing`**: asset required but not detected (actionable for monitoring tools).
+- **`unknown`**: non-actionable. Covers undetermined requirement (`null`) and explicitly not-required assets (`false`). The enum deliberately has no separate "not required" value.
+
+Whether a site produces Console warnings still depends on real source data, configured meta key candidates, inheritance or fallback behaviour, and project-specific filters. Improved defaults do not guarantee warnings on every site.
 
 **Filters** (project-specific required-asset rules without editing the plugin):
 
