@@ -173,6 +173,16 @@ final class PlotDatasetMapper
 	}
 
 	/**
+	 * Resolves normalised plot availability/status from ordered meta key candidates.
+	 *
+	 * @param list<string> $statusKeys
+	 */
+	public static function resolvedPlotStatus(int $postId, array $statusKeys): ?string
+	{
+		return self::firstResolvedPlotStatus($postId, $statusKeys);
+	}
+
+	/**
 	 * Walks status meta key candidates until a value normalises to a non-null plot status.
 	 *
 	 * Unlike {@see firstScalarMeta()}, this avoids stopping on an earlier key whose raw meta is

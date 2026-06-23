@@ -9,6 +9,9 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Asset completeness signals on the authenticated plots REST mapping.
+ *
+ * Completeness status is present / missing / unknown only. `unknown` is non-actionable: it covers
+ * both undetermined requirements and assets that are explicitly not required for monitoring.
  */
 final class PlotDatasetMapperCompletenessTest extends TestCase
 {
@@ -56,7 +59,7 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		$this->assertSame('present', $mapped['floor_plan_completeness_status']);
 	}
 
-	public function testPlotWithoutFloorPlan(): void
+	public function testPlotWithoutFloorPlanWhenRequirementUndeterminedIsNonActionable(): void
 	{
 		$plotId = 602;
 		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
@@ -70,7 +73,42 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		$this->assertSame('unknown', $mapped['floor_plan_completeness_status']);
 	}
 
-	public function testPlotFloorPlanRequiredFalseStaysUnknownWhenMissing(): void
+	public function testAvailablePlotWithoutFloorPlanMarksMissing(): void
+	{
+		$plotId = 612;
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => [
+				'floor_plan' => '',
+				'plot_status' => 'available',
+			],
+		];
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertFalse($mapped['has_floor_plan']);
+		$this->assertTrue($mapped['floor_plan_required']);
+		$this->assertSame('missing', $mapped['floor_plan_completeness_status']);
+	}
+
+	public function testSoldPlotWithoutFloorPlanIsNonRequiredAndNonActionable(): void
+	{
+		$plotId = 613;
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => [
+				'floor_plan' => '',
+				'plot_status' => 'sold',
+			],
+		];
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertFalse($mapped['has_floor_plan']);
+		$this->assertFalse($mapped['floor_plan_required']);
+		// Sold plots do not require a floor plan; status stays unknown because the enum has no "not required" value.
+		$this->assertSame('unknown', $mapped['floor_plan_completeness_status']);
+	}
+
+	public function testPlotFloorPlanExplicitlyNotRequiredIsNonActionableWhenMissing(): void
 	{
 		$plotId = 603;
 		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
@@ -87,7 +125,7 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		$this->assertSame('unknown', $mapped['floor_plan_completeness_status']);
 	}
 
-	public function testPlotFloorPlanRequiredTrueMarksMissing(): void
+	public function testPlotFloorPlanRequiredViaFilterMarksMissing(): void
 	{
 		$plotId = 604;
 		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
@@ -140,7 +178,7 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		$this->assertSame('present', $mapped['intro_media_completeness_status']);
 	}
 
-	public function testDevelopmentWithNoIntroMedia(): void
+	public function testPublishedDevelopmentWithoutIntroMediaMarksMissingByDefault(): void
 	{
 		$plotId = 607;
 		$developmentId = 9607;
@@ -155,10 +193,49 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		$this->assertFalse($mapped['has_intro_video']);
 		$this->assertFalse($mapped['has_intro_image']);
 		$this->assertSame('none', $mapped['intro_media_type']);
+		$this->assertSame('missing', $mapped['intro_media_completeness_status']);
+	}
+
+	public function testDraftDevelopmentWithoutIntroMediaIsNonActionableByDefault(): void
+	{
+		$plotId = 615;
+		$developmentId = 9615;
+		$this->seedLinkedDevelopment($developmentId, 'draft', 'Pipeline Site');
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => ['development' => $developmentId],
+			$developmentId => ['intro_video' => '', 'intro_image' => ''],
+		];
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertFalse($mapped['has_intro_video']);
+		$this->assertFalse($mapped['has_intro_image']);
+		$this->assertSame('none', $mapped['intro_media_type']);
+		// Non-published developments are not required to carry intro media by default.
 		$this->assertSame('unknown', $mapped['intro_media_completeness_status']);
 	}
 
-	public function testDevelopmentIntroMediaRequiredMarksMissing(): void
+	public function testDevelopmentIntroMediaExplicitlyNotRequiredIsNonActionableWhenMissing(): void
+	{
+		$plotId = 614;
+		$developmentId = 9614;
+		$this->seedLinkedDevelopment($developmentId, 'publish', 'Westgate');
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => ['development' => $developmentId],
+			$developmentId => ['intro_video' => '', 'intro_image' => ''],
+		];
+		$GLOBALS['contextualwp_housebuilder_test_filters'] = [
+			'contextualwp_housebuilder_development_intro_media_required' => static fn (): bool => false,
+		];
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertFalse($mapped['has_intro_video']);
+		$this->assertFalse($mapped['has_intro_image']);
+		$this->assertSame('unknown', $mapped['intro_media_completeness_status']);
+	}
+
+	public function testDevelopmentIntroMediaRequiredViaFilterMarksMissing(): void
 	{
 		$plotId = 608;
 		$developmentId = 9608;
