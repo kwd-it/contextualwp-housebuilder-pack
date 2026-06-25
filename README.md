@@ -2,7 +2,7 @@
 
 Housebuilder sector pack plugin for ContextualWP.
 
-This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.7** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
+This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.8** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
 
 ## Why this exists
 
@@ -63,6 +63,12 @@ The plots endpoint exposes conservative **monitoring signals** only. Downstream 
 - **`unknown`**: non-actionable. Covers undetermined requirement (`null`) and explicitly not-required assets (`false`). The enum deliberately has no separate "not required" value.
 
 Whether a site produces Console warnings still depends on real source data, configured meta key candidates, inheritance or fallback behaviour, and project-specific filters. Improved defaults do not guarantee warnings on every site.
+
+**Detection accuracy (0.4.8):** presence detection recognises more valid stored shapes so existing assets are not reported as **`missing`**. This is an accuracy fix only; the **`present`** / **`missing`** / **`unknown`** enum, requirement defaults, and linked development resolution are unchanged.
+
+- **Intro video**: a video-labelled field treats **any present value** as a video reference (not only selected provider URLs). Bare IDs, self-hosted file URLs, embed or oEmbed values, attachment IDs, and nested ACF arrays count as **`present`**.
+- **Intro image**: values stored as a URL, attachment ID, **`src`** key, or ACF image array count as **`present`**.
+- **Floor plans**: in addition to post meta, floor plans stored in **`acf/plot-floorplans`** Gutenberg block data within **`post_content`** count as **`present`** when a flattened repeater key (for example **`floors_0_floorplan`**) has a non-empty value. Block names and the field key pattern are filterable via **`contextualwp_housebuilder_floor_plan_block_names`** and **`contextualwp_housebuilder_floor_plan_block_field_pattern`**. Existing post-meta-based detection is preserved.
 
 **Filters** (project-specific required-asset rules without editing the plugin):
 

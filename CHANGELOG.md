@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.8 - 2026-06-25
+
+### Fixed
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: **detection accuracy** for asset completeness signals. Several valid stored shapes were previously reported as **`missing`** even though the asset existed. This release recognises those shapes; it does **not** change the **`present`** / **`missing`** / **`unknown`** status enum, requirement-default semantics, or linked development resolution.
+- **Development intro video**: a video-labelled field now treats **any present value** as a video reference, instead of only recognising selected provider URLs. Intro videos stored as **bare IDs**, **self-hosted file URLs**, **embed** or **oEmbed** values, **attachment IDs**, or **nested ACF arrays** are now recognised as **`present`**.
+- **Development intro image**: intro image values stored as a **URL**, **attachment ID**, **`src`** key, or **ACF image array** are now recognised as **`present`**.
+- **Plot floor plans**: floor plans stored in **`acf/plot-floorplans`** Gutenberg block data within **`post_content`** are now recognised as **`present`**. Flattened ACF repeater keys (for example **`floors_0_floorplan`**) are treated as present when a non-empty value exists. Existing **post-meta-based** floor plan detection is preserved and continues to work.
+
+### Added
+
+- Generic default meta key candidates for development **`intro_video`** and **`intro_image`** were broadened (still overridable via **`contextualwp_housebuilder_development_meta_key_candidates`**).
+- Filters for block-stored floor plan detection: **`contextualwp_housebuilder_floor_plan_block_names`** (default **`acf/plot-floorplans`**) and **`contextualwp_housebuilder_floor_plan_block_field_pattern`** (default matches flattened **`floors_{index}_floorplan`** repeater keys).
+- PHPUnit coverage for intro media value shapes, intro image value shapes, and block-stored floor plan detection (extended `PlotDatasetMapperCompletenessTest`, new `AssetPresenceHelperTest`).
+
+### Notes
+
+- This is a **detection accuracy fix only**. No new product features, no status enum changes, and no requirement-default changes. No site-specific identifiers (post, plot, development, or attachment IDs) or one-off values are hardcoded.
+
 ## 0.4.7 - 2026-06-23
 
 ### Changed
