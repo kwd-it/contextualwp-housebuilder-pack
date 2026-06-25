@@ -51,7 +51,12 @@ final class CompletenessSignals
 	public static function plotSignals(\WP_Post $plot, array $metaKeys): array
 	{
 		$floorPlanKeys = $metaKeys['floor_plan'] ?? [];
-		$hasFloorPlan = AssetPresenceHelper::hasPresentMeta((int) $plot->ID, $floorPlanKeys);
+		$hasFloorPlanMeta = AssetPresenceHelper::hasPresentMeta((int) $plot->ID, $floorPlanKeys);
+
+		// Some sites store floor plans only inside ACF Gutenberg block data in post_content, never in
+		// post meta; scan the content as a fallback so block-stored plans are not reported as missing.
+		$hasFloorPlanBlock = $hasFloorPlanMeta === true ? null : self::floorPlanFromBlockContent($plot);
+		$hasFloorPlan = self::firstDeterminedPresence($hasFloorPlanMeta, $hasFloorPlanBlock);
 
 		$requiredDefault = self::defaultPlotFloorPlanRequired($plot, $metaKeys, $hasFloorPlan);
 		$requiredRaw = \apply_filters(
@@ -138,6 +143,149 @@ final class CompletenessSignals
 	}
 
 	/**
+	 * Detects floor plans stored inside ACF Gutenberg block data in a plot's post_content.
+	 *
+	 * Recognises one or more configured blocks (default: `acf/plot-floorplans`) and treats any
+	 * block-data key matching the floor-plan field pattern (default: `floors_{index}_floorplan`,
+	 * the flattened shape of an ACF repeater) with a non-empty value as a present floor plan.
+	 *
+	 * @return bool|null true = a recognised block carries a non-empty floor plan value,
+	 *                   false = a recognised block exists but no floor plan value was set,
+	 *                   null  = no recognised block / no parsable content (undetermined)
+	 *
+	 * @internal Exposed for PHPUnit; not a stable public API for other code.
+	 */
+	public static function floorPlanFromBlockContent(\WP_Post $plot): ?bool
+	{
+		$content = isset($plot->post_content) ? (string) $plot->post_content : '';
+		if (\trim($content) === '' || !\function_exists('parse_blocks')) {
+			return null;
+		}
+
+		$blockNames = self::floorPlanBlockNames();
+		if ($blockNames === []) {
+			return null;
+		}
+
+		$blocks = \parse_blocks($content);
+		if (!\is_array($blocks)) {
+			return null;
+		}
+
+		return self::scanBlocksForFloorPlan($blocks, $blockNames, self::floorPlanBlockFieldPattern());
+	}
+
+	/**
+	 * @param array<int, mixed> $blocks
+	 * @param list<string> $blockNames
+	 */
+	private static function scanBlocksForFloorPlan(array $blocks, array $blockNames, string $fieldPattern): ?bool
+	{
+		$sawRecognisedBlock = false;
+
+		foreach ($blocks as $block) {
+			if (!\is_array($block)) {
+				continue;
+			}
+
+			$name = isset($block['blockName']) && \is_string($block['blockName']) ? $block['blockName'] : '';
+			if (\in_array($name, $blockNames, true)) {
+				$sawRecognisedBlock = true;
+				$data = $block['attrs']['data'] ?? null;
+				if (\is_array($data) && self::blockDataHasFloorPlan($data, $fieldPattern)) {
+					return true;
+				}
+			}
+
+			$inner = $block['innerBlocks'] ?? null;
+			if (\is_array($inner) && $inner !== []) {
+				$nested = self::scanBlocksForFloorPlan($inner, $blockNames, $fieldPattern);
+				if ($nested === true) {
+					return true;
+				}
+				if ($nested === false) {
+					$sawRecognisedBlock = true;
+				}
+			}
+		}
+
+		return $sawRecognisedBlock ? false : null;
+	}
+
+	/**
+	 * @param array<string, mixed> $data
+	 */
+	private static function blockDataHasFloorPlan(array $data, string $fieldPattern): bool
+	{
+		foreach ($data as $key => $value) {
+			if (!\is_string($key) || \preg_match($fieldPattern, $key) !== 1) {
+				continue;
+			}
+			if (AssetPresenceHelper::metaValueIndicatesPresence($value)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private static function floorPlanBlockNames(): array
+	{
+		$default = ['acf/plot-floorplans'];
+		$raw = \apply_filters('contextualwp_housebuilder_floor_plan_block_names', $default);
+		if (!\is_array($raw)) {
+			return $default;
+		}
+
+		$names = [];
+		foreach ($raw as $name) {
+			if (\is_string($name)) {
+				$trimmed = \trim($name);
+				if ($trimmed !== '') {
+					$names[] = $trimmed;
+				}
+			}
+		}
+
+		return $names === [] ? $default : $names;
+	}
+
+	private static function floorPlanBlockFieldPattern(): string
+	{
+		$default = '/^floors_\d+_floorplan$/';
+		$raw = \apply_filters('contextualwp_housebuilder_floor_plan_block_field_pattern', $default);
+		if (!\is_string($raw) || $raw === '' || @\preg_match($raw, '') === false) {
+			return $default;
+		}
+
+		return $raw;
+	}
+
+	/**
+	 * Combines presence checks from independent sources, preferring a determined (non-null) result.
+	 *
+	 * Returns true if any source found the asset, false if a source checked but found nothing, and
+	 * null only when no source could determine presence.
+	 */
+	private static function firstDeterminedPresence(?bool ...$results): ?bool
+	{
+		$sawDetermined = false;
+		foreach ($results as $result) {
+			if ($result === true) {
+				return true;
+			}
+			if ($result === false) {
+				$sawDetermined = true;
+			}
+		}
+
+		return $sawDetermined ? false : null;
+	}
+
+	/**
 	 * @return array<string, list<string>>
 	 */
 	public static function defaultDevelopmentMetaKeyMap(): array
@@ -145,19 +293,31 @@ final class CompletenessSignals
 		return [
 			'intro_video' => [
 				'intro_video',
+				'intro_video_url',
+				'intro_video_embed',
 				'video',
+				'video_url',
+				'video_embed',
+				'video_oembed',
 				'hero_video',
 				'development_video',
 				'site_video',
+				'tour_video',
 				'vimeo_url',
-				'video_url',
+				'vimeo',
+				'vimeo_id',
+				'youtube_url',
+				'youtube',
 				'intro_vimeo',
 			],
 			'intro_image' => [
 				'intro_image',
+				'intro_image_url',
 				'hero_image',
 				'development_image',
 				'site_image',
+				'feature_image',
+				'banner_image',
 				'intro_hero',
 				'hero',
 			],

@@ -65,6 +65,36 @@ if (!\function_exists('get_permalink')) {
 	}
 }
 
+if (!\function_exists('parse_blocks')) {
+	/**
+	 * Minimal Gutenberg block parser stub: handles self-closing and wrapped block comments with JSON attrs.
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	function parse_blocks(string $content): array
+	{
+		$blocks = [];
+		if ($content === '') {
+			return $blocks;
+		}
+		$pattern = '/<!--\s+wp:([a-z][a-z0-9-]*\/[a-z][a-z0-9-]*)\s*(\{.*?\})?\s*(\/)?-->/s';
+		if (\preg_match_all($pattern, $content, $matches, \PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$attrsJson = $match[2] ?? '';
+				$attrs = $attrsJson !== '' ? \json_decode($attrsJson, true) : [];
+				$blocks[] = [
+					'blockName' => $match[1],
+					'attrs' => \is_array($attrs) ? $attrs : [],
+					'innerBlocks' => [],
+					'innerHTML' => '',
+				];
+			}
+		}
+
+		return $blocks;
+	}
+}
+
 if (!\function_exists('get_object_taxonomies')) {
 	/** @return array<string, mixed> */
 	function get_object_taxonomies($objectType, $output = 'names'): array

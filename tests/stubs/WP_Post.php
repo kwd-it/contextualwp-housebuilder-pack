@@ -15,5 +15,7 @@ if (!\class_exists('WP_Post', false)) {
 		public string $post_status = '';
 
 		public string $post_modified_gmt = '';
+
+		public string $post_content = '';
 	}
 }

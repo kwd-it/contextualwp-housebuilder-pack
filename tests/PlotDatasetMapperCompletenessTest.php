@@ -90,6 +90,48 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		$this->assertSame('missing', $mapped['floor_plan_completeness_status']);
 	}
 
+	public function testPlotWithFloorPlanInAcfBlockContentIsPresent(): void
+	{
+		$plotId = 620;
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => ['plot_status' => 'available'],
+		];
+		$content = $this->plotFloorPlansBlock('{"floors":"2","floors_0_floorplan":"10376","floors_1_floorplan":"10377"}');
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId, $content), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertTrue($mapped['has_floor_plan']);
+		$this->assertSame('present', $mapped['floor_plan_completeness_status']);
+	}
+
+	public function testPlotWithEmptyAcfBlockFloorPlanValuesMarksMissingWhenRequired(): void
+	{
+		$plotId = 621;
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => ['plot_status' => 'available'],
+		];
+		$content = $this->plotFloorPlansBlock('{"floors":"2","floors_0_floorplan":"","floors_1_floorplan":""}');
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId, $content), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertFalse($mapped['has_floor_plan']);
+		$this->assertTrue($mapped['floor_plan_required']);
+		$this->assertSame('missing', $mapped['floor_plan_completeness_status']);
+	}
+
+	public function testPlotFloorPlanPostMetaDetectionStillWorksWithoutBlockContent(): void
+	{
+		$plotId = 622;
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => ['floor_plan' => 4444, 'plot_status' => 'available'],
+		];
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertTrue($mapped['has_floor_plan']);
+		$this->assertSame('present', $mapped['floor_plan_completeness_status']);
+	}
+
 	public function testSoldPlotWithoutFloorPlanIsNonRequiredAndNonActionable(): void
 	{
 		$plotId = 613;
@@ -160,6 +202,49 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		$this->assertSame('present', $mapped['intro_media_completeness_status']);
 	}
 
+	/**
+	 * Intro videos exist in many stored shapes; none should be reported as "missing".
+	 *
+	 * @dataProvider provideIntroVideoShapes
+	 *
+	 * @param mixed $storedValue
+	 */
+	public function testDevelopmentWithIntroVideoShapeIsPresent(string $metaKey, $storedValue): void
+	{
+		$plotId = 650;
+		$developmentId = 9650;
+		$this->seedLinkedDevelopment($developmentId, 'publish', 'Wired');
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => ['development' => $developmentId],
+			$developmentId => [$metaKey => $storedValue],
+		];
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertTrue($mapped['has_intro_video'], 'Video shape should be detected as present');
+		$this->assertSame('video', $mapped['intro_media_type']);
+		$this->assertSame('present', $mapped['intro_media_completeness_status']);
+	}
+
+	/**
+	 * @return array<string, array{0: string, 1: mixed}>
+	 */
+	public static function provideIntroVideoShapes(): array
+	{
+		return [
+			'plain vimeo url' => ['intro_video', 'https://vimeo.com/123456789'],
+			'bare vimeo id string' => ['intro_video', '824804225'],
+			'self-hosted file url' => ['intro_video', 'https://cdn.example.test/intro.mp4'],
+			'attachment id int' => ['intro_video', 4455],
+			'attachment id numeric string' => ['intro_video', '4455'],
+			'oembed array' => ['video_oembed', ['url' => 'https://vimeo.com/55', 'value' => '<iframe></iframe>']],
+			'embed html string' => ['video_embed', '<iframe src="https://player.example.test/v/1"></iframe>'],
+			'acf media array' => ['intro_video', ['ID' => 4455, 'mime_type' => 'video/mp4']],
+			'nested group with src' => ['intro_video', ['src' => 'https://cdn.example.test/intro.webm']],
+			'youtube url' => ['youtube_url', 'https://www.youtube.com/watch?v=abc'],
+		];
+	}
+
 	public function testDevelopmentWithIntroImagePresent(): void
 	{
 		$plotId = 606;
@@ -176,6 +261,43 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		$this->assertTrue($mapped['has_intro_image']);
 		$this->assertSame('image', $mapped['intro_media_type']);
 		$this->assertSame('present', $mapped['intro_media_completeness_status']);
+	}
+
+	/**
+	 * @dataProvider provideIntroImageShapes
+	 *
+	 * @param mixed $storedValue
+	 */
+	public function testDevelopmentWithIntroImageShapeIsPresent(string $metaKey, $storedValue): void
+	{
+		$plotId = 660;
+		$developmentId = 9660;
+		$this->seedLinkedDevelopment($developmentId, 'publish', 'Wyatt');
+		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
+			$plotId => ['development' => $developmentId],
+			$developmentId => [$metaKey => $storedValue],
+		];
+
+		$mapped = PlotDatasetMapper::mapPost($this->plotPost($plotId), PlotDatasetMapper::defaultMetaKeyMap());
+
+		$this->assertFalse($mapped['has_intro_video']);
+		$this->assertTrue($mapped['has_intro_image'], 'Image shape should be detected as present');
+		$this->assertSame('image', $mapped['intro_media_type']);
+		$this->assertSame('present', $mapped['intro_media_completeness_status']);
+	}
+
+	/**
+	 * @return array<string, array{0: string, 1: mixed}>
+	 */
+	public static function provideIntroImageShapes(): array
+	{
+		return [
+			'acf image array' => ['intro_image', ['ID' => 8801, 'url' => 'https://example.test/hero.jpg']],
+			'plain image url' => ['intro_image', 'https://example.test/hero.jpg'],
+			'attachment id int' => ['hero_image', 8802],
+			'attachment id numeric string' => ['intro_image', '8803'],
+			'nested group with src' => ['intro_image', ['src' => 'https://example.test/banner.webp']],
+		];
 	}
 
 	public function testPublishedDevelopmentWithoutIntroMediaMarksMissingByDefault(): void
@@ -316,15 +438,21 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 		];
 	}
 
-	private function plotPost(int $plotId): \WP_Post
+	private function plotPost(int $plotId, string $postContent = ''): \WP_Post
 	{
 		$post = new \WP_Post();
 		$post->ID = $plotId;
 		$post->post_type = 'plot';
 		$post->post_status = 'publish';
 		$post->post_modified_gmt = '2026-01-15 12:00:00';
+		$post->post_content = $postContent;
 
 		return $post;
+	}
+
+	private function plotFloorPlansBlock(string $dataJson): string
+	{
+		return '<!-- wp:acf/plot-floorplans {"name":"acf/plot-floorplans","data":' . $dataJson . ',"mode":"edit"} /-->';
 	}
 
 	private function linkedPost(int $id, string $status): \WP_Post

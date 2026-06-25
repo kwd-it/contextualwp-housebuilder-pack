@@ -32,7 +32,7 @@ final class AssetPresenceHelper
 			return false;
 		}
 
-		foreach (['ID', 'id', 'url', 'value'] as $key) {
+		foreach (['ID', 'id', 'url', 'value', 'src', 'embed', 'oembed', 'guid'] as $key) {
 			if (!\array_key_exists($key, $raw)) {
 				continue;
 			}
@@ -54,36 +54,17 @@ final class AssetPresenceHelper
 
 	/**
 	 * Whether a meta value stored under a video-oriented field indicates a video asset.
+	 *
+	 * Values reach this method only from video-labelled meta keys, so any value that indicates
+	 * presence is treated as a video reference regardless of how it is stored: a provider URL
+	 * (Vimeo, YouTube, etc.), a self-hosted file URL, an embed or oEmbed string, a numeric video id,
+	 * an attachment id, or an ACF media array. Gating on recognised provider hostnames previously
+	 * reported existing videos as "missing" whenever they were stored as plain URLs, ids, or other
+	 * embeds, so detection now defers entirely to {@see metaValueIndicatesPresence()}.
 	 */
 	public static function metaValueIndicatesVideo(mixed $raw): bool
 	{
-		if (!self::metaValueIndicatesPresence($raw)) {
-			return false;
-		}
-		if (\is_string($raw)) {
-			return self::stringIndicatesVideoUrl($raw);
-		}
-		if (\is_array($raw)) {
-			foreach (['url', 'value', 'oembed', 'embed'] as $key) {
-				if (!\array_key_exists($key, $raw)) {
-					continue;
-				}
-				$inner = $raw[$key];
-				if (\is_string($inner) && self::stringIndicatesVideoUrl($inner)) {
-					return true;
-				}
-			}
-			if (\array_is_list($raw)) {
-				foreach ($raw as $item) {
-					if (self::metaValueIndicatesVideo($item)) {
-						return true;
-					}
-				}
-			}
-		}
-
-		// Attachment id or opaque non-URL value on a video-labelled field counts as present.
-		return true;
+		return self::metaValueIndicatesPresence($raw);
 	}
 
 	/**
@@ -98,7 +79,7 @@ final class AssetPresenceHelper
 			return self::stringIndicatesImageUrl($raw) || self::stringIndicatesPresence($raw);
 		}
 		if (\is_array($raw)) {
-			foreach (['url', 'value', 'sizes'] as $key) {
+			foreach (['url', 'value', 'src', 'sizes'] as $key) {
 				if (!\array_key_exists($key, $raw)) {
 					continue;
 				}
@@ -173,19 +154,6 @@ final class AssetPresenceHelper
 		$trimmed = \trim($raw);
 
 		return $trimmed !== '' && $trimmed !== '0';
-	}
-
-	private static function stringIndicatesVideoUrl(string $raw): bool
-	{
-		$lower = \strtolower(\trim($raw));
-		if ($lower === '') {
-			return false;
-		}
-
-		return \str_contains($lower, 'vimeo.com')
-			|| \str_contains($lower, 'youtube.com')
-			|| \str_contains($lower, 'youtu.be')
-			|| \str_contains($lower, 'player.vimeo.com');
 	}
 
 	private static function stringIndicatesImageUrl(string $raw): bool
