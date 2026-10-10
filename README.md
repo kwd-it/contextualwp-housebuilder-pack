@@ -82,7 +82,7 @@ Meta key candidates: extend **`contextualwp_housebuilder_plot_meta_key_candidate
 ## Requirements
 
 - WordPress: **6.4+**
-- PHP: **8.1+**
+- PHP: **8.3+**
 - ContextualWP core: **1.3.3+**
 
 ## Installation
