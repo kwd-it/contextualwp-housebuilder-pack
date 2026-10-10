@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Minimum supported PHP version raised from 8.1 to **8.3** (plugin header `Requires PHP`, `composer.json`, README). PHP 8.1 reached end of life on 2025-12-31. No runtime behaviour, status enum or default changed.
+
 ## 0.4.8 - 2026-06-25
 
 ### Fixed
