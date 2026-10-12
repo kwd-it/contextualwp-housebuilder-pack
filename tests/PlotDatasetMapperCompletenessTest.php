@@ -213,7 +213,7 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 	{
 		$plotId = 650;
 		$developmentId = 9650;
-		$this->seedLinkedDevelopment($developmentId, 'publish', 'Wired');
+		$this->seedLinkedDevelopment($developmentId, 'publish', 'Willow Court');
 		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
 			$plotId => ['development' => $developmentId],
 			$developmentId => [$metaKey => $storedValue],
@@ -272,7 +272,7 @@ final class PlotDatasetMapperCompletenessTest extends TestCase
 	{
 		$plotId = 660;
 		$developmentId = 9660;
-		$this->seedLinkedDevelopment($developmentId, 'publish', 'Wyatt');
+		$this->seedLinkedDevelopment($developmentId, 'publish', 'Elm Grove');
 		$GLOBALS['contextualwp_housebuilder_test_post_meta'] = [
 			$plotId => ['development' => $developmentId],
 			$developmentId => [$metaKey => $storedValue],
