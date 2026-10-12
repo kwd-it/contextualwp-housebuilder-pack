@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Minimum supported PHP version raised from 8.1 to **8.3** (plugin header `Requires PHP`, `composer.json`, README). PHP 8.1 reached end of life on 2025-12-31. No runtime behaviour, status enum or default changed.
+- Two development titles in `PlotDatasetMapperCompletenessTest` were replaced with neutral example values, per the fixture policy in `DEVNOTES.md`. Test behaviour and assertions are unchanged.
 
 ## 0.4.8 - 2026-06-25
 
