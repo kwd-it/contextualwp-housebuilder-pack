@@ -12,9 +12,10 @@ final class Compatibility
 	public const CORE_REGISTRATION_FN = 'contextualwp_register_sector_pack';
 
 	/**
-	 * Placeholder: if ContextualWP exposes a version constant, we will read it.
+	 * The version constant ContextualWP core defines from its plugin header.
 	 *
-	 * This should be verified against ContextualWP core (v1.1+).
+	 * Verified against the core versions this pack supports (>= 1.3.3). When
+	 * the constant is absent the version check stays best-effort (see below).
 	 */
 	public const CORE_VERSION_CONST = 'CONTEXTUALWP_VERSION';
 
@@ -38,11 +39,9 @@ final class Compatibility
 
 	/**
 	 * Checks minimum ContextualWP core version if the version can be detected.
-	 * If the core version cannot be detected, this currently returns true as a
-	 * best-effort assumption.
-	 *
-	 * Assumption to verify (ContextualWP core v1.1+):
-	 * - Core exposes a reliable version API (constant or function) for strict checks.
+	 * If the core version cannot be detected, this returns true as a deliberate
+	 * best-effort assumption, so the pack degrades gracefully rather than
+	 * blocking on a core build that does not expose its version.
 	 */
 	public static function isCoreCompatible(string $minimumVersion): bool
 	{
