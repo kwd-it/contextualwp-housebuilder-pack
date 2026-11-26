@@ -2,7 +2,7 @@
 
 Housebuilder sector pack plugin for ContextualWP.
 
-This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.8** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
+This repository is the **first sector pack** for ContextualWP and remains a **clean, public reference implementation** for industry-specific packs. Through **0.4.9** it ships **additive, rule-based** enhancements: manifest relationships, REST and manifest schema interpretation, aggregate interpretation output, ACF field semantics, and a **read-only authenticated plot dataset REST endpoint** for typical housebuilder-style WordPress setups. **Structural entity detection goes beyond exact CPT slug matches** (see below). ContextualWP core stays sector-agnostic; this plugin enriches exported schema when active.
 
 ## Why this exists
 
@@ -63,6 +63,8 @@ The plots endpoint exposes conservative **monitoring signals** only. Downstream 
 - **`unknown`**: non-actionable. Covers undetermined requirement (`null`) and explicitly not-required assets (`false`). The enum deliberately has no separate "not required" value.
 
 Whether a site produces Console warnings still depends on real source data, configured meta key candidates, inheritance or fallback behaviour, and project-specific filters. Improved defaults do not guarantee warnings on every site.
+
+**Stable pagination (0.4.9):** the plots feed orders results by modification date and then post ID (both descending), so clients paging through it never receive a plot twice or miss one when several plots share a modification time. Fields, limits and permissions are unchanged.
 
 **Detection accuracy (0.4.8):** presence detection recognises more valid stored shapes so existing assets are not reported as **`missing`**. This is an accuracy fix only; the **`present`** / **`missing`** / **`unknown`** enum, requirement defaults, and linked development resolution are unchanged.
 
