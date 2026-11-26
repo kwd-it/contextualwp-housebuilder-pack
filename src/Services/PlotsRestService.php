@@ -82,16 +82,7 @@ final class PlotsRestService
 
 		$metaKeys = $this->mergeMetaKeyMap(PlotDatasetMapper::defaultMetaKeyMap());
 
-		$query = new \WP_Query([
-			'post_type' => $plotTypes,
-			'post_status' => 'publish',
-			'orderby' => 'modified',
-			'order' => 'DESC',
-			'posts_per_page' => $perPage,
-			'paged' => $page,
-			'no_found_rows' => true,
-			'ignore_sticky_posts' => true,
-		]);
+		$query = new \WP_Query(self::queryArgs($plotTypes, $page, $perPage));
 
 		$out = [];
 		foreach ($query->posts as $post) {
@@ -102,6 +93,32 @@ final class PlotsRestService
 		}
 
 		return \rest_ensure_response($out);
+	}
+
+	/**
+	 * WP_Query arguments for one page of the feed.
+	 *
+	 * Newest modification first, then post ID descending. The ID tiebreaker gives a total order: many plots
+	 * can share a modification time (for example after a bulk import or sync), and without it the database
+	 * may order tied rows differently for each page, so a paging client sees some plots twice and misses others.
+	 *
+	 * @param list<string> $plotTypes
+	 * @return array<string, mixed>
+	 */
+	public static function queryArgs(array $plotTypes, int $page, int $perPage): array
+	{
+		return [
+			'post_type' => $plotTypes,
+			'post_status' => 'publish',
+			'orderby' => [
+				'modified' => 'DESC',
+				'ID' => 'DESC',
+			],
+			'posts_per_page' => $perPage,
+			'paged' => $page,
+			'no_found_rows' => true,
+			'ignore_sticky_posts' => true,
+		];
 	}
 
 	/**

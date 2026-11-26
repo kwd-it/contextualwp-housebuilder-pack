@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Fixed
+
+- **`GET /wp-json/contextualwp-housebuilder/v1/plots`**: **stable pagination**. Results are now ordered by modification date and then post ID (both descending). Previously plots sharing a modification time (common after a bulk import or sync) could be ordered differently on each page, so clients paging through the feed saw some plots twice and missed others. Fields, page size limits and permissions are unchanged; the order differs only among plots with identical modification times.
+
 ### Changed
 
 - Minimum supported PHP version raised from 8.1 to **8.3** (plugin header `Requires PHP`, `composer.json`, README). PHP 8.1 reached end of life on 2025-12-31. No runtime behaviour, status enum or default changed.
